@@ -1,0 +1,256 @@
+import React from "react";
+import {
+  Grid,
+  Button,
+  IconButton,
+  Icon,
+  makeStyles,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@material-ui/core";
+import { useFormikContext, FieldArray } from "formik";
+import GlobitsTextField from "app/common/form/GlobitsTextField";
+import GlobitsDateTimePicker from "app/common/form/GlobitsDateTimePicker";
+import GlobitsPagingAutocomplete from "app/common/form/GlobitsPagingAutocomplete";
+import { useTranslation } from "react-i18next";
+import AddIcon from "@material-ui/icons/Add";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    background: "#E4f5fc",
+    padding: "10px 15px",
+    borderRadius: "5px",
+  },
+  groupContainer: {
+    width: "100%",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "0!important",
+    },
+  },
+  tableContainer: {
+    marginTop: "16px",
+    // overflow: "auto",
+    // overflowX: "auto",
+    "& .MuiTableCell-body": {
+      border: "1px solid #e9ecef",
+      padding: 0,
+    },
+    "& .MuiTable-root": {
+      tableLayout: "fixed !important"
+    },
+    "& .MuiTableCell-head": {
+      minWidth: "150px",
+      padding: "10px",
+      border: "1px solid #e9ecef",
+      textAlign: "center",
+    },
+  },
+  tableHeader: {
+    width: "100%",
+    borderBottom: "1px solid #E3F2FD",
+    marginBottom: "8px",
+    "& th": {
+      width: "calc(100vw / 4)",
+    },
+  },
+}));
+
+function Row(props) {
+  const { index, arrayHelpers } = props;
+  const { values, setFieldValue } = useFormikContext();
+
+  return (
+    <TableRow key={index}>
+      <TableCell colSpan={1}>
+        <GlobitsTextField name={`familyRelationships[${index}].fullName`} />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsPagingAutocomplete
+          name={`familyRelationships[${index}].profession`}
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsDateTimePicker
+          name={`familyRelationships[${index}].birthDate`}
+          disableFuture={true}
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsPagingAutocomplete
+          name={`familyRelationships[${index}].familyRelationship`}
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField name={`familyRelationships[${index}].address`} />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField name={`familyRelationships[${index}].workingPlace`} />
+      </TableCell>
+      {/* <TableCell colSpan={1}>
+      <GlobitsTextField name={`familyRelationships[${index}].description`} />
+    </TableCell> */}
+
+      <TableCell style={{ textAlign: "center" }}>
+        <IconButton size="small" onClick={() => arrayHelpers.remove(index)}>
+          <Icon fontSize="small" color="secondary">
+            delete
+          </Icon>
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export default function RelativeImpl() {
+  const { t } = useTranslation();
+  const classes = useStyles();
+  const { values } = useFormikContext();
+  return (
+    <FieldArray
+      name="familyRelationships"
+      render={(arrayHelpers) => (
+        <div className={classes.groupContainer}>
+          {/* <h5 className="m-0">{t("staff.personCertificate")}</h5> */}
+
+          <Button
+            className="btn btn-primary d-inline-flex"
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() =>
+              arrayHelpers.push({
+                fullName: "",
+                profession: "",
+                birthDate: null,
+                familyRelationship: null,
+                address: "",
+                workingPlace: "",
+                // description: "",
+              })
+            }
+          >
+            {t("general.Add.salaryHistory")}
+          </Button>
+          <div className={classes.tableContainer}>
+            <Table style={{ tableLayout: "auto" }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell colSpan={1}>{t("relatives.name")}</TableCell>
+                  <TableCell colSpan={1}>{t("relatives.job")}</TableCell>
+                  <TableCell colSpan={1}>{t("relatives.dob")}</TableCell>
+                  <TableCell colSpan={1}>{t("relatives.relative")}</TableCell>
+                  <TableCell colSpan={1}>{t("relatives.address")}</TableCell>
+                  <TableCell colSpan={1}>
+                    {t("relatives.workingPlace")}
+                  </TableCell>
+                  {/* <TableCell colSpan={1}>{t("relatives.desc")}</TableCell> */}
+                  <TableCell style={{ minWidth: "70px" }}>
+                    {t("general.action")}
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {values?.familyRelationships?.map((detail, index) => (
+                  <Row index={index} arrayHelpers={arrayHelpers} />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+    />
+    // <Grid className={classes.root} container>
+    //   <FieldArray
+    //     name="familyRelationships"
+    //     render={(arrayHelpers) => (
+    //       <div className={classes.groupContainer}>
+    //         <Button
+    //           className="mb-16 mr-16 btn btn-info d-inline-flex"
+    //           startIcon={<AddIcon />}
+    //           variant="contained"
+    //           onClick={() =>
+    //             arrayHelpers.push({
+    //               fullName: "",
+    //               profession: "",
+    //               birthDate: null,
+    //               familyRelationship: null,
+    //               address: "",
+    //               description: "",
+    //             })
+    //           }
+    //         >
+    //           {t("general.button.add")}
+    //         </Button>
+    //         <div className={classes.tableContainer}>
+    //           <div className={classes.tableHeader}>
+    //             <table>
+    //               <tr>
+    //                 <th>{t("relatives.name")} </th>
+    //                 <th>{t("relatives.job")}</th>
+    //                 <th>{t("relatives.dob")}</th>
+    //                 <th>{t("relatives.relative")}</th>
+    //                 <th>{t("relatives.address")}</th>
+    //                 <th>{t("relatives.desc")}</th>
+    //               </tr>
+    //             </table>
+    //           </div>
+    //           {values?.familyRelationships?.map(
+    //             (familyRelationships, index) => (
+    //               <div
+    //                 style={{ display: "flex", marginBottom: "5px" }}
+    //                 key={index}
+    //               >
+    //                 <Grid item md={3} xs={3}>
+    //                   <GlobitsTextField
+    //                     name={`familyRelationships[${index}].fullName`}
+    //                   />
+    //                 </Grid>
+    //                 <Grid item md={3} xs={3}>
+    //                   <GlobitsTextField
+    //                     name={`familyRelationships[${index}].profession`}
+    //                   />
+    //                 </Grid>
+    //                 <Grid item md={3} xs={3}>
+    //                   <GlobitsDateTimePicker
+    //                     name={`familyRelationships[${index}].birthDate`}
+    //                     disableFuture={true}
+    //                   />
+    //                 </Grid>
+
+    //                 <Grid item md={3} xs={3}>
+    //                   <GlobitsPagingAutocomplete
+    //                     name={`familyRelationships[${index}].familyRelationship`}
+    //                     api={pagingFamilyRelationship}
+    //                   />
+    //                 </Grid>
+
+    //                 <Grid item md={3} xs={3}>
+    //                   <GlobitsTextField
+    //                     name={`familyRelationships[${index}].address`}
+    //                   />
+    //                 </Grid>
+    //                 <Grid item md={3} xs={3}>
+    //                   <GlobitsTextField
+    //                     name={`familyRelationships[${index}].description`}
+    //                   />
+    //                 </Grid>
+    //                 <IconButton
+    //                   size="small"
+    //                   onClick={() => arrayHelpers.remove(index)}
+    //                 >
+    //                   <Icon fontSize="small" color="secondary">
+    //                     delete
+    //                   </Icon>
+    //                 </IconButton>
+    //               </div>
+    //             )
+    //           )}
+    //         </div>
+    //       </div>
+    //     )}
+    //   />
+    // </Grid>
+  );
+}

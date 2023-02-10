@@ -1,0 +1,135 @@
+import React from "react";
+import { observer } from "mobx-react";
+import { Grid } from "@material-ui/core";
+import { useTranslation } from "react-i18next";
+import GlobitsPagingAutocomplete from "app/common/form/GlobitsPagingAutocomplete";
+import GlobitsSelectInput from "app/common/form/GlobitsSelectInput";
+import GlobitsTextField from "app/common/form/GlobitsTextField";
+import LocalConstants from "../../../LocalConstants";
+import Accordion from "@material-ui/core/Accordion";
+import AccordionSummary from "@material-ui/core/AccordionSummary";
+import AccordionDetails from "@material-ui/core/AccordionDetails";
+import PersonCertificate from "../Component/PersonCertificate";
+import Typography from "@material-ui/core/Typography";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import GlobitsCheckBox from "app/common/form/GlobitsCheckBox";
+
+export default observer(function AcademicLevel() {
+  const { t } = useTranslation();
+
+  return (
+    <React.Fragment>
+      <Grid container spacing={2}>
+        <Grid item md={12} xs={12}>
+          <PersonCertificate />
+        </Grid>
+        <Grid item xs={12} md={12}>
+          <Accordion className="accordion">
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1a-content"
+            >
+              <Typography>Chi tiết</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item sm={6} xs={12}>
+                  <GlobitsCheckBox
+                    label={t("humanResourcesInformation.ethnicLanguage")}
+                    name="ethnicLanguage"
+                  />
+                </Grid>
+                <Grid item sm={6} xs={12}>
+                  <GlobitsCheckBox
+                    label={t("humanResourcesInformation.exercise")}
+                    name="physicalEducationTeacher"
+                  />
+                </Grid>
+                <Grid item sm={6} xs={12}>
+                  <GlobitsPagingAutocomplete
+                    label={t("humanResourcesInformation.studying")}
+                    name="studying"
+                    // api={pagingEducationDegrees}
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <GlobitsSelectInput
+                    label={t("humanResourcesInformation.generalEducation")}
+                    name="highSchoolEducation"
+                    keyValue="value"
+                    options={LocalConstants.ListHighSchoolEducation}
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={t("humanResourcesInformation.qualification")}
+                    name="qualification"
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={t("humanResourcesInformation.specializedTraining")}
+                    name="specializedName"
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={t("humanResourcesInformation.formsOfTraining")}
+                    name="formsOfTraining"
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={t("humanResourcesInformation.trainingPlaces")}
+                    name="trainingPlaces"
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={t("humanResourcesInformation.graduationYear")}
+                    name="graduationYear"
+                    type="number"
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={t("humanResourcesInformation.trainingCountry")}
+                    name="trainingCountry"
+                  />
+                </Grid>
+                <Grid item sm={6} xs={12}>
+                  <GlobitsPagingAutocomplete
+                    label={t("humanResourcesInformation.academicRank")}
+                    name="academicRank"
+                    // api={pagingAcademics}
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={t("humanResourcesInformation.yearOfRecognition")}
+                    name="yearOfRecognitionAcademicRank"
+                    type="number"
+                  />
+                </Grid>
+                <Grid item sm={6} xs={12}>
+                  <GlobitsPagingAutocomplete
+                    label={t("humanResourcesInformation.degree")}
+                    name="degree"
+                    // api={pagingEducationDegrees}
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={t("humanResourcesInformation.yearOfRecognition")}
+                    name="yearOfRecognitionDegree"
+                    type="number"
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Grid>
+      </Grid>
+    </React.Fragment>
+  );
+});

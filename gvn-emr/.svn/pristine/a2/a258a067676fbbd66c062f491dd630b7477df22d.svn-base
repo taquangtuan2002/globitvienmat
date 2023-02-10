@@ -1,0 +1,143 @@
+import React from "react";
+import {
+  Grid,
+  Button,
+  IconButton,
+  Icon,
+  makeStyles,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@material-ui/core";
+import { useFormikContext, FieldArray } from "formik";
+import GlobitsDateTimePicker from "app/common/form/GlobitsDateTimePicker";
+import GlobitsTextField from "app/common/form/GlobitsTextField";
+import GlobitsPagingAutocomplete from "app/common/form/GlobitsPagingAutocomplete";
+import { useTranslation } from "react-i18next";
+import AddIcon from "@material-ui/icons/Add";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    background: "#E4f5fc",
+    padding: "10px 15px",
+    borderRadius: "5px",
+  },
+  groupContainer: {
+    width: "100%",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "0!important",
+    },
+  },
+  tableContainer: {
+    marginTop: "16px",
+    // overflowX: "auto",
+    // overflowY: "hidden",
+    "& .MuiTableCell-body": {
+      border: "1px solid #e9ecef",
+      padding: 0,
+    },
+    "& .MuiTable-root": {
+      tableLayout: "fixed !important"
+    },
+    "& .MuiTableCell-head": {
+      minWidth: "150px",
+      padding: "10px",
+      border: "1px solid #e9ecef",
+      textAlign: "center",
+    },
+  },
+  tableHeader: {
+    width: "100%",
+    borderBottom: "1px solid #E3F2FD",
+    marginBottom: "8px",
+    "& th": {
+      width: "calc(100vw / 4)",
+    },
+  },
+}));
+
+function Row(props) {
+  const { index, arrayHelpers } = props;
+  const { values, setFieldValue } = useFormikContext();
+
+  return (
+    <TableRow key={index}>
+      <TableCell colSpan={1}>
+        <GlobitsPagingAutocomplete
+          name={`personCertificate[${index}].certificate`}
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField name={`personCertificate[${index}].name`} />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField name={`personCertificate[${index}].level`} />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsDateTimePicker name={`personCertificate[${index}].issueDate`} />
+      </TableCell>
+      <TableCell style={{ textAlign: "center" }}>
+        <IconButton size="small" onClick={() => arrayHelpers.remove(index)}>
+          <Icon fontSize="small" color="secondary">
+            delete
+          </Icon>
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export default function PersonCertificate() {
+  const { t } = useTranslation();
+  const classes = useStyles();
+  const { values } = useFormikContext();
+
+  return (
+    <FieldArray
+      name="personCertificate"
+      render={(arrayHelpers) => (
+        <div className={classes.groupContainer}>
+          {/* <h5 className="m-0">{t("staff.personCertificate")}</h5> */}
+
+          <Button
+            className="btn btn-primary d-inline-flex"
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() =>
+              arrayHelpers.push({
+                certificate: null,
+                name: "",
+                level: "",
+                issueDate: null,
+              })
+            }
+          >
+            {t("general.Add.agreement")}
+          </Button>
+          <div className={classes.tableContainer}>
+            <Table style={{ tableLayout: "auto" }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell colSpan={1}>{t("certificate.title")}</TableCell>
+                  <TableCell colSpan={1}>{t("certificate.name")}</TableCell>
+                  <TableCell colSpan={1}>{t("certificate.level")}</TableCell>
+                  <TableCell colSpan={1}>
+                    {t("certificate.issueDate")}
+                  </TableCell>
+                  <TableCell> {t("general.action")}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {values?.personCertificate?.map((detail, index) => (
+                  <Row index={index} arrayHelpers={arrayHelpers} />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+    />
+  );
+}

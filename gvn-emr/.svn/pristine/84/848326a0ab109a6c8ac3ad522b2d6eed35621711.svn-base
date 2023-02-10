@@ -1,0 +1,236 @@
+import React, { useState } from "react";
+import {
+  Button,
+  IconButton,
+  Icon,
+  makeStyles,
+  TableCell,
+  Table,
+  TableRow,
+  TableBody,
+  TableHead,
+} from "@material-ui/core";
+import { useFormikContext, FieldArray } from "formik";
+import { useTranslation } from "react-i18next";
+import AddIcon from "@material-ui/icons/Add";
+import StaffEducationHistoryPopupAdd from "./StaffEducationHistoryPopupAdd";
+import moment from "moment";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    background: "#E4f5fc",
+    padding: "10px 15px",
+    borderRadius: "5px",
+  },
+  groupContainer: {
+    width: "100%",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "0!important",
+    },
+  },
+  tableContainer: {
+    marginTop: "16px",
+    overflowX: "auto",
+    overflowY: "auto",
+    maxHeight: "60vh",
+    "& .MuiTableCell-body": {
+      border: "1px solid #e9ecef",
+      padding: 0,
+      textAlign: "center",
+    },
+    "& .MuiTableCell-head": {
+      padding: "10px",
+      minWidth: "150px",
+      border: "1px solid #e9ecef",
+      textAlign: "center",
+    },
+  },
+  tableHeader: {
+    width: "100%",
+    borderBottom: "1px solid #E3F2FD",
+    marginBottom: "8px",
+    // "& th": {
+    //   width: "calc(100vw / 4)",
+    // },
+  },
+  tableRow_Body: {
+    height: "50px",
+  },
+}));
+
+export default function StaffEducationHistoryImpl() {
+  const { t } = useTranslation();
+  const classes = useStyles();
+
+  const [openPopup, setOpenPopup] = useState(false);
+  const [editable, setEditable] = useState(true);
+  const [editableIndex, setEditableIndex] = useState(null);
+  const [item, setItem] = useState(null);
+
+  const { values, setFieldValue } = useFormikContext();
+  let list = values?.educationHistory;
+
+  const handleSubmitItem = (values) => {
+    let newList = list ? list : [];
+
+    if (!item) {
+      newList.push(values);
+    } else {
+      newList = newList?.map((el, index) => {
+        if (values?.index === index) {
+          return values;
+        }
+        return el;
+      });
+    }
+
+    setFieldValue("educationHistory", newList);
+    setOpenPopup(false);
+    setEditable(true);
+  };
+
+  return (
+    <>
+      <FieldArray
+        name="educationHistory"
+        render={(arrayHelpers) => (
+          <div className={classes.groupContainer}>
+            <Button
+              className="btn btn-primary d-inline-flex"
+              startIcon={<AddIcon />}
+              variant="contained"
+              onClick={() => {
+                setOpenPopup(true);
+                setItem(null);
+              }}
+            >
+              {t("general.button.add")}
+            </Button>
+            <div className={classes.tableContainer}>
+              {list?.length > 0 ? (
+                <Table style={{ tableLayout: "auto" }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell style={{ minWidth: "60px" }}>
+                        {t("general.action")}
+                      </TableCell>
+                      <TableCell>{t("educationHistory.startDate")}</TableCell>
+                      <TableCell>{t("educationHistory.endDate")}</TableCell>
+                      <TableCell>
+                        {t("educationHistory.educationalInstitution")}
+                      </TableCell>
+                      <TableCell>{t("educationHistory.country")}</TableCell>
+                      <TableCell>{t("educationHistory.speciality")}</TableCell>
+                      <TableCell>
+                        {t("educationHistory.formsOfTraining")}
+                      </TableCell>
+                      <TableCell>{t("educationHistory.degree")}</TableCell>
+                      <TableCell>{t("educationHistory.note")}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {list?.map((item, index) => (
+                      <TableRow key={index} className={classes.tableRow_Body}>
+                        <TableCell size="small">
+                          {editable === false && editableIndex === index ? (
+                            <IconButton size="small">
+                              <Icon fontSize="small" color="primary">
+                                visibility
+                              </Icon>
+                            </IconButton>
+                          ) : (
+                            <>
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  setItem({ ...item, index });
+                                  setOpenPopup(true);
+                                  setEditable(false);
+                                  setEditableIndex(index);
+                                }}
+                              >
+                                <Icon fontSize="small" color="primary">
+                                  edit
+                                </Icon>
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => arrayHelpers.remove(index)}
+                              >
+                                <Icon fontSize="small" color="secondary">
+                                  delete
+                                </Icon>
+                              </IconButton>
+                            </>
+                          )}
+                        </TableCell>
+
+                        <TableCell colSpan={1}>
+                          {item?.startDate
+                            ? moment(item?.startDate).format("DD/MM/YYYY")
+                            : null}
+                        </TableCell>
+
+                        <TableCell colSpan={1}>
+                          {item?.endDate
+                            ? moment(item?.endDate).format("DD/MM/YYYY")
+                            : null}
+                        </TableCell>
+
+                        <TableCell colSpan={1}>
+                          {item?.educationalInstitution?.name
+                            ? item?.educationalInstitution?.name
+                            : null}
+                        </TableCell>
+                        <TableCell colSpan={1}>
+                          {item?.country?.name ? item?.country?.name : null}
+                        </TableCell>
+
+                        <TableCell colSpan={1}>
+                          {item?.major?.name ? item?.major?.name : null}
+                        </TableCell>
+
+                        <TableCell colSpan={1}>
+                          {item?.educationType?.name
+                            ? item?.educationType?.name
+                            : null}
+                        </TableCell>
+
+                        <TableCell colSpan={1}>
+                          {item?.educationDegree?.name
+                            ? item?.educationDegree?.name
+                            : null}
+                        </TableCell>
+
+                        <TableCell colSpan={1}>
+                          {item?.description ? item?.description : ""}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <h5 className="text-primary n-w">
+                  Không có quá trình đào tạo nào
+                </h5>
+              )}
+            </div>
+          </div>
+        )}
+      />
+
+      {openPopup && (
+        <StaffEducationHistoryPopupAdd
+          item={item}
+          handleSubmit={handleSubmitItem}
+          handleClose={() => {
+            setOpenPopup(false);
+            setEditable(true);
+          }}
+          open={openPopup}
+          editable={editable}
+        />
+      )}
+    </>
+  );
+}

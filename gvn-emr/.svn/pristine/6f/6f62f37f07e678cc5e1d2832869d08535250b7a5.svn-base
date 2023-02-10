@@ -1,0 +1,198 @@
+package com.globits.emr.service.impl;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.transaction.Transactional;
+
+import org.joda.time.LocalDateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import com.globits.core.service.impl.GenericServiceImpl;
+import com.globits.emr.domain.ServiceType;
+import com.globits.emr.dto.ServiceTypeDto;
+import com.globits.emr.dto.search.SearchDto;
+import com.globits.emr.repository.ServiceTypeRepository;
+import com.globits.emr.service.ServiceTypeService;
+
+@Service
+@Transactional
+public class ServiceTypeServiceImpl extends GenericServiceImpl<ServiceType, UUID> implements ServiceTypeService{
+	
+	@Autowired
+	private ServiceTypeRepository serviceTypeRepos;
+	
+	@PersistenceContext
+    EntityManager manager;
+
+	@Override
+	public List<ServiceTypeDto> getAllDto() {
+		return serviceTypeRepos.getAllDto();
+	}
+
+	@Override
+	public ServiceTypeDto getDtoById(UUID id) {
+		if(id != null) {
+			return serviceTypeRepos.getDtoById(id);
+		}
+		return null;
+	}
+
+	@Override
+	public ServiceTypeDto saveOrUpdate(UUID id, ServiceTypeDto dto) {
+		if(dto != null) {
+			ServiceType entity = null;
+			Authentication authencation = SecurityContextHolder.getContext().getAuthentication();
+			String currentUsername = "Unknown User";
+			if(authencation != null) {
+				currentUsername = authencation.getName();
+			}
+			if(dto.getId() != null) {
+				Optional<ServiceType> serviceTypeOptional = serviceTypeRepos.findById(dto.getId());
+				if(serviceTypeOptional.isPresent()) {
+					entity = serviceTypeOptional.get();
+				}
+				if(entity != null) {
+					entity.setModifyDate(LocalDateTime.now());
+					entity.setModifiedBy(currentUsername);
+				}
+			}
+			if(entity == null) {
+				entity = new ServiceType();
+				entity.setCreateDate(LocalDateTime.now());
+				entity.setModifyDate(LocalDateTime.now());
+				entity.setModifiedBy(currentUsername);
+			}
+			if(dto.getCode() != null && StringUtils.hasText(dto.getCode())) {
+				entity.setCode(dto.getCode());
+			}
+			if(dto.getName() != null) {
+				entity.setName(dto.getName());
+			}
+			if(dto.getDescription() != null) {
+				entity.setDescription(dto.getDescription());
+			}
+			entity = serviceTypeRepos.save(entity);
+			return new ServiceTypeDto(entity);
+		}
+		return null;
+	}
+
+	@Override
+	public Boolean deleteById(UUID id) {
+		if(id != null) {
+			ServiceType entity = null;
+			Optional<ServiceType> serviceTypeOptional = serviceTypeRepos.findById(id);
+			if(serviceTypeOptional.isPresent()) {
+				entity = serviceTypeOptional.get();
+			}
+			if(entity != null) {
+				serviceTypeRepos.deleteById(id);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public void updateVoided(UUID id) {
+		if(id != null) {
+			Authentication authencation = SecurityContextHolder.getContext().getAuthentication();
+			String currentUsername = "Unknown User";
+			if(authencation != null) {
+				currentUsername = authencation.getName();
+			}
+			ServiceType entity = null;
+			Optional<ServiceType> serviceTypeOptional = serviceTypeRepos.findById(id);
+			if(serviceTypeOptional.isPresent()) {
+				entity = serviceTypeOptional.get();
+			}
+			if(entity != null) {
+				entity.setModifyDate(LocalDateTime.now());
+				entity.setModifiedBy(currentUsername);
+			}
+			entity.setVoided(true);
+		}
+	}
+	
+	@Override
+	public Boolean deleteFakeVoided(UUID id) {
+		if(id != null) {
+			ServiceType entity = null;
+			Optional<ServiceType> serviceTypeOptional = serviceTypeRepos.findById(id);
+			if(serviceTypeOptional.isPresent()) {
+				entity = serviceTypeOptional.get();
+			}
+			if(entity != null) {
+				this.updateVoided(id);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public Boolean checkCode(UUID id, String code) {
+		if(code != null && StringUtils.hasText(code)) {
+			Long numberResult = serviceTypeRepos.checkCode(id, code);
+			return numberResult != 0L;
+		}
+		return false;
+	}
+
+
+	@Override
+	public Page<ServiceTypeDto> searchByPage(SearchDto searchDto) {
+		if(searchDto != null) {
+			int pageIndex = searchDto.getPageIndex();
+			int pageSize = searchDto.getPageSize();
+			
+			if(pageIndex > 0) {
+				pageIndex = pageIndex - 1;
+			} else {
+				pageIndex = 0;
+			}
+			
+			String whereClause = "";
+			String sql = "Select new com.globits.emr.dto.ServiceTypeDto(entity) From ServiceType entity Where (1=1) ";
+			String sqlCount = "Select count(entity.id) From ServiceType as entity Where (1=1) ";
+			
+			if(searchDto.getKeyword() != null && StringUtils.hasText(searchDto.getKeyword())) {
+				whereClause += " AND (entity.name LIKE :text OR entity.code LIKE :text)";
+			}
+			sql += whereClause;
+			sqlCount += whereClause;
+			
+			Query q = manager.createQuery(sql, ServiceTypeDto.class);
+			Query qCount = manager.createQuery(sqlCount);
+			
+			if(searchDto.getKeyword() != null && StringUtils.hasText(searchDto.getKeyword())) {
+				q.setParameter("text", '%' + searchDto.getKeyword() + '%');
+				qCount.setParameter("text", '%' + searchDto.getKeyword() + '%');
+			}
+			int startPosition = pageIndex * pageSize;
+			q.setFirstResult(startPosition);
+			q.setMaxResults(pageSize);
+			List<ServiceTypeDto> results = q.getResultList();
+			if(results == null || results.size() == 0) {
+				return null;
+			}
+			long numberResult = (long) qCount.getSingleResult();
+			Pageable pageable = PageRequest.of(pageIndex, pageSize);
+			return new PageImpl<>(results, pageable, numberResult);
+		}
+		return null;
+	}
+}

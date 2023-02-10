@@ -1,0 +1,19 @@
+package com.globits.emr.repository;
+
+import com.globits.emr.domain.Observation;
+import com.globits.emr.dto.ObservationDto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface ObservationRepository extends JpaRepository<Observation, UUID> {
+    @Query("Select new com.globits.emr.dto.ObservationDto(entity) From Observation entity")
+    List<ObservationDto> getAllDto();
+
+    @Query("Select new com.globits.emr.dto.ObservationDto(entity) From Observation entity Where entity.id = ?1")
+    ObservationDto getDtoById(UUID id);
+}

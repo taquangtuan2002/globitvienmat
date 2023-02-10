@@ -1,0 +1,16 @@
+package com.globits.emr.service;
+
+import java.util.List;
+import java.util.UUID;
+
+import com.globits.emr.dto.PersonAttributeTypeDto;
+import com.globits.emr.dto.VisitTypeDto;
+
+public interface VisitTypeService {
+	VisitTypeDto saveOrUpdate(VisitTypeDto dto);
+	Boolean delete(UUID id);
+	List<VisitTypeDto> getAllVisitTypeDtos();
+	VisitTypeDto deleteVoided(UUID id);
+	Boolean checkCode(UUID id,String code);
+	VisitTypeDto getByCode(String code);
+}

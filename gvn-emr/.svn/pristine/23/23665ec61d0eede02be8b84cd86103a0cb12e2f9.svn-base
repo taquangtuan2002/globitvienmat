@@ -1,0 +1,325 @@
+package com.globits.emr.service.impl;
+
+import com.globits.core.dto.PersonDto;
+import com.globits.core.utils.CommonUtils;
+import com.globits.emr.domain.concept.ConceptDatatype;
+import com.globits.emr.dto.EncounterTypeDto;
+import com.globits.emr.dto.PersonAttributeTypeDto;
+import com.globits.emr.dto.VisitTypeDto;
+import com.globits.emr.dto.concept.ConceptDatatypeDto;
+import com.globits.emr.dto.concept.ConceptTypeDto;
+import com.globits.emr.service.ConceptDatatypeService;
+import com.globits.emr.service.ConceptTypeService;
+import com.globits.emr.service.EncounterTypeService;
+import com.globits.emr.service.PersonAttributeTypeService;
+import com.globits.emr.service.SetupDataService;
+import com.globits.emr.service.VisitService;
+import com.globits.emr.service.VisitTypeService;
+import com.globits.security.domain.Role;
+import com.globits.security.dto.RoleDto;
+import com.globits.security.dto.UserDto;
+import com.globits.security.service.RoleService;
+import com.globits.security.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+@Service
+public class SetupDataServiceImpl implements SetupDataService {
+
+	@Autowired
+	private RoleService roleService;
+
+	@Autowired
+	private UserService userService;
+
+	@Autowired
+	private ConceptDatatypeService conceptDatatypeService;
+	@Autowired
+	private ConceptTypeService conceptTypeService;
+	@Autowired
+	private VisitTypeService visitTypeService;
+	@Autowired
+	private EncounterTypeService encounterTypeService;
+
+	@Autowired
+	private PersonAttributeTypeService personAttributeTypeService;
+
+	@Override
+	public void setupEmrData() {
+		try {
+			createRoles();
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}
+		// create user
+		createAdminUser();
+
+		// create concept datatype
+		createConceptDataType();
+		// create concept type
+		createConceptType();
+		// create visit type
+		createVisitType();
+		// create encounttype
+		createEncounterType();
+		// create personAttributeType
+		createPersonAttributeType();
+
+	}
+
+	private void createAdminUser() {
+		UserDto userDto = userService.findByUsername(com.globits.core.Constants.USER_ADMIN_USERNAME);
+		if (CommonUtils.isNotNull(userDto)) {
+			return;
+		}
+
+		userDto = new UserDto();
+		userDto.setUsername(com.globits.core.Constants.USER_ADMIN_USERNAME);
+		userDto.setPassword("admin");
+		userDto.setEmail("admin@globits.net");
+		userDto.setActive(true);
+		userDto.setDisplayName("Admin User");
+
+		Role role = roleService.findByName(com.globits.core.Constants.ROLE_ADMIN);
+
+		userDto.getRoles().addAll(Arrays.asList(new RoleDto(role)));
+
+		PersonDto person = new PersonDto();
+		person.setGender("M");
+		person.setFirstName("Admin");
+		person.setLastName("User");
+		person.setDisplayName("Admin User");
+
+		userDto.setPerson(person);
+
+		try {
+			userService.save(userDto);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	private void createRoleIfNotExist(String roleName) {
+
+		if (CommonUtils.isEmpty(roleName)) {
+			return;
+		}
+
+		Role role = roleService.findByName(roleName);
+
+		if (CommonUtils.isNotNull(role)) {
+			return;
+		}
+
+		if (role == null) {
+			role = new Role();
+			role.setName(roleName);
+		}
+
+		try {
+			roleService.save(role);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	private void createRoles() throws XMLStreamException {
+
+		List<String> roleNames = new ArrayList<>();
+
+		XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+		InputStream in = getClass().getClassLoader().getResourceAsStream("sys-roles.xml");
+		XMLStreamReader streamReader = inputFactory.createXMLStreamReader(in, "UTF-8");
+
+		streamReader.nextTag();
+		streamReader.nextTag();
+
+		while (streamReader.hasNext()) {
+			if (streamReader.isStartElement()) {
+				switch (streamReader.getLocalName()) {
+				case "name": {
+					roleNames.add(streamReader.getElementText());
+					break;
+				}
+				}
+			}
+			streamReader.next();
+		}
+
+		streamReader.close();
+
+		for (String roleName : roleNames) {
+			createRoleIfNotExist(roleName);
+		}
+	}
+
+	private void createConceptDataType() {
+		// Numeric
+		ConceptDatatypeDto conceptData1 = new ConceptDatatypeDto();
+		conceptData1.setName("Numeric");
+		conceptData1.setCode("numeric");
+		conceptData1.setDescription("Numeric");
+		if (!conceptDatatypeService.checkCode(null, conceptData1.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData1);
+		}
+		// codeed
+		ConceptDatatypeDto conceptData2 = new ConceptDatatypeDto();
+		conceptData2.setName("Coded");
+		conceptData2.setCode("Coded");
+		conceptData2.setDescription("Coded");
+		if (!conceptDatatypeService.checkCode(null, conceptData2.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData2);
+		}
+		// Date
+		ConceptDatatypeDto conceptData3 = new ConceptDatatypeDto();
+		conceptData3.setName("Date");
+		conceptData3.setCode("Date");
+		conceptData3.setDescription("Date");
+		if (!conceptDatatypeService.checkCode(null, conceptData3.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData3);
+		}
+		// boolean
+		ConceptDatatypeDto conceptData4 = new ConceptDatatypeDto();
+		conceptData4.setName("Boolean");
+		conceptData4.setCode("Boolean");
+		conceptData4.setDescription("Boolean");
+		if (!conceptDatatypeService.checkCode(null, conceptData4.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData4);
+		}
+		// Text
+		ConceptDatatypeDto conceptData5 = new ConceptDatatypeDto();
+		conceptData4.setName("Text");
+		conceptData4.setCode("Text");
+		conceptData4.setDescription("Text");
+		if (!conceptDatatypeService.checkCode(null, conceptData4.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData4);
+		}
+
+	}
+
+	private void createConceptType() {
+		// laptet
+		ConceptTypeDto conceptType = new ConceptTypeDto();
+		conceptType.setName("Labtest");
+		conceptType.setCode("Labtest");
+		conceptType.setDescription("Labtest");
+		if (!conceptTypeService.checkCode(null, conceptType.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType);
+		}
+		// diagnostic
+		ConceptTypeDto conceptType1 = new ConceptTypeDto();
+		conceptType1.setName("Diagnostic");
+		conceptType1.setCode("Diagnostic");
+		conceptType1.setDescription("Diagnostic");
+		if (!conceptTypeService.checkCode(null, conceptType1.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType1);
+		}
+		// Symptom
+		ConceptTypeDto conceptType2 = new ConceptTypeDto();
+		conceptType2.setName("Symptom");
+		conceptType2.setCode("Symptom");
+		conceptType2.setDescription("Symptom");
+		if (!conceptTypeService.checkCode(null, conceptType2.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType2);
+		}
+	}
+
+	private void createVisitType() {
+		// Tái Khám
+		VisitTypeDto visitType = new VisitTypeDto();
+		visitType.setName("re-examination");
+		visitType.setCode("re-examination");
+		visitType.setDescription("re-examination");
+		if (!visitTypeService.checkCode(null, visitType.getCode())) {
+			visitTypeService.saveOrUpdate(visitType);
+		}
+		// khám lần đầu
+		VisitTypeDto visitType1 = new VisitTypeDto();
+		visitType1.setName("first_examination");
+		visitType1.setCode("first-examination");
+		visitType1.setDescription("first_examination");
+		if (!visitTypeService.checkCode(null, visitType1.getCode())) {
+			visitTypeService.saveOrUpdate(visitType1);
+		}
+		// khám từ xa
+		VisitTypeDto visitType2 = new VisitTypeDto();
+		visitType2.setName("remote_examination");
+		visitType2.setCode("remote_examination");
+		visitType2.setDescription("remote_examination");
+		if (!visitTypeService.checkCode(null, visitType2.getCode())) {
+			visitTypeService.saveOrUpdate(visitType2);
+		}
+	}
+
+	private void createPersonAttributeType() {
+		// BHYT
+		PersonAttributeTypeDto personAttributeTypeDto = new PersonAttributeTypeDto();
+		personAttributeTypeDto.setName("BHYT");
+		personAttributeTypeDto.setCode("BHYT");
+		personAttributeTypeDto.setDescription("BHYT");
+		if (!personAttributeTypeService.checkCode(null, personAttributeTypeDto.getCode())) {
+			personAttributeTypeService.saveOrUpdate(personAttributeTypeDto);
+		}
+		// registration code
+		PersonAttributeTypeDto personAttributeTypeDto1 = new PersonAttributeTypeDto();
+		personAttributeTypeDto.setName("registration_code");
+		personAttributeTypeDto.setCode("registration_code");
+		personAttributeTypeDto.setDescription("registration_code");
+		if (!personAttributeTypeService.checkCode(null, personAttributeTypeDto.getCode())) {
+			personAttributeTypeService.saveOrUpdate(personAttributeTypeDto);
+		}
+
+	}
+
+	private void createEncounterType() {
+		// thăm khám 
+				EncounterTypeDto encounterTypeDto = new EncounterTypeDto();
+				encounterTypeDto.setName("visit");
+				encounterTypeDto.setCode("visit");
+				encounterTypeDto.setDescription("visit");
+				if (!encounterTypeService.checkCode(null, encounterTypeDto.getCode())) {
+					encounterTypeService.saveOrUpdate(encounterTypeDto);
+				}
+				// Chuyển phòng khám 
+				EncounterTypeDto encounterTypeDto1 = new EncounterTypeDto();
+				encounterTypeDto1.setName("Change_clinic");
+				encounterTypeDto1.setCode("Change_clinic");
+				encounterTypeDto1.setDescription("Change_clinic");
+				if (!encounterTypeService.checkCode(null, encounterTypeDto1.getCode())) {
+					encounterTypeService.saveOrUpdate(encounterTypeDto1);
+				}
+				// Đo thi lực 
+				EncounterTypeDto encounterTypeDto2 = new EncounterTypeDto();
+				encounterTypeDto2.setName("Visual_acuity_measurement");
+				encounterTypeDto2.setCode("Visual_acuity_measurement");
+				encounterTypeDto2.setDescription("Visual_acuity_measurement");
+				if (!encounterTypeService.checkCode(null, encounterTypeDto2.getCode())) {
+					encounterTypeService.saveOrUpdate(encounterTypeDto2);
+				}
+				//Đo khúc xạ 
+				EncounterTypeDto encounterTypeDto3 = new EncounterTypeDto();
+				encounterTypeDto3.setName("Refraction_measurement");
+				encounterTypeDto3.setCode("Refraction_measurement");
+				encounterTypeDto3.setDescription("Refraction_measurement");
+				if (!encounterTypeService.checkCode(null, encounterTypeDto3.getCode())) {
+					encounterTypeService.saveOrUpdate(encounterTypeDto3);
+				}
+				// Đo kính
+				EncounterTypeDto encounterTypeDto4 = new EncounterTypeDto();
+				encounterTypeDto4.setName("Measuring_glasses");
+				encounterTypeDto4.setCode("Measuring_glasses");
+				encounterTypeDto4.setDescription("Measuring_glasses");
+				if (!encounterTypeService.checkCode(null, encounterTypeDto4.getCode())) {
+					encounterTypeService.saveOrUpdate(encounterTypeDto4);
+				}
+	}
+
+}

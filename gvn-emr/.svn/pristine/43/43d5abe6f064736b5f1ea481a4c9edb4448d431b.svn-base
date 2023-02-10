@@ -1,0 +1,115 @@
+import {
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  makeStyles,
+} from "@material-ui/core";
+import moment from "moment";
+import { useTranslation } from "react-i18next";
+import { useFormikContext } from "formik";
+import React from "react";
+import { observer } from "mobx-react";
+import "react-toastify/dist/ReactToastify.css";
+
+const useStyles = makeStyles(() => ({
+  container: {
+    overflowX: "scroll",
+  },
+  table: {
+    minWidth: "586px",
+  },
+  tableCell: {
+    paddingRight: "8px",
+  },
+  tableCellHead: {
+    paddingRight: "8px",
+  },
+  tableContainer: {
+    overflowX: "auto",
+    overflowY: "auto",
+  },
+}));
+
+export default observer(function StaffInsuranceHistory() {
+  const { t } = useTranslation();
+  const { values } = useFormikContext();
+  const classes = useStyles();
+
+  return (
+    <Grid container spacing={3}>
+      <Grid item xs={12} className={classes.container}>
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell className={classes.tableCellHead} colSpan={1}>
+                {t("humanResourcesInformation.startDate")}
+              </TableCell>
+              <TableCell className={classes.tableCellHead} colSpan={1}>
+                {t("humanResourcesInformation.endDate")}
+              </TableCell>
+              <TableCell className={classes.tableCellHead} colSpan={1}>
+                {t("humanResourcesInformation.salaryCofficient")}
+              </TableCell>
+              <TableCell className={classes.tableCellHead} colSpan={1}>
+                {t("humanResourcesInformation.insuranceSalary")}
+              </TableCell>
+              <TableCell className={classes.tableCellHead} colSpan={1}>
+                {t("humanResourcesInformation.staffPercentage")}
+              </TableCell>
+              <TableCell className={classes.tableCellHead} colSpan={1}>
+                {t("humanResourcesInformation.orgPercentage")}
+              </TableCell>
+              <TableCell className={classes.tableCellHead} colSpan={1}>
+                {t("humanResourcesInformation.staffInsuranceAmount")}
+              </TableCell>
+              <TableCell className={classes.tableCellHead} colSpan={1}>
+                {t("humanResourcesInformation.orgInsuranceAmount")}
+              </TableCell>
+              <TableCell className={classes.tableCellHead} colSpan={1}>
+                {t("humanResourcesInformation.note")}
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {values?.stafInsuranceHistory?.map((row, index) => (
+              <TableRow key={index}>
+                <TableCell className={classes.tableCell} colSpan={1}>
+                  {row.startDate
+                    ? moment(row.startDate).format("DD/MM/yyyy")
+                    : ""}
+                </TableCell>
+                <TableCell className={classes.tableCell} colSpan={1}>
+                  {row.endDate ? moment(row.endDate).format("DD/MM/yyyy") : ""}
+                </TableCell>
+                <TableCell className={classes.tableCell} colSpan={1}>
+                  {row.salaryCofficient}
+                </TableCell>
+                <TableCell className={classes.tableCell} colSpan={1}>
+                  {row.insuranceSalary}
+                </TableCell>
+                <TableCell className={classes.tableCell} colSpan={1}>
+                  {row.staffPercentage}
+                </TableCell>
+                <TableCell className={classes.tableCell} colSpan={1}>
+                  {row.orgPercentage}
+                </TableCell>
+                <TableCell className={classes.tableCell} colSpan={1}>
+                  {row.staffInsuranceAmount}
+                </TableCell>
+                <TableCell className={classes.tableCell} colSpan={1}>
+                  {row.orgInsuranceAmount}
+                </TableCell>
+                <TableCell className={classes.tableCell} colSpan={1}>
+                  {row.note}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Grid>
+    </Grid>
+  );
+});

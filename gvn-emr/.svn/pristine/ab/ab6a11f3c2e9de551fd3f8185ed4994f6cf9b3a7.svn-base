@@ -1,0 +1,69 @@
+import React from "react";
+import GlobitsTable from "../../../common/GlobitsTable";
+import { useStore } from "../../../stores";
+import { useTranslation } from "react-i18next";
+// import { IconButton, Icon } from "@material-ui/core";
+import Config from "../../../common/GlobitsConfigConst";
+import { observer } from "mobx-react";
+
+// function MaterialButton(props) {
+//   const { item } = props;
+//   return (
+//     <div>
+//       <IconButton size="small" onClick={() => props.onSelect(item, 0)}>
+//         <Icon fontSize="small" color="primary">
+//           edit
+//         </Icon>
+//       </IconButton>
+//       <IconButton size="small" onClick={() => props.onSelect(item, 1)}>
+//         <Icon fontSize="small" color="secondary">
+//           delete
+//         </Icon>
+//       </IconButton>
+//     </div>
+//   );
+// }
+
+export default observer(function SelectPositionTitleList(props) {
+  const { positionTitleStore } = useStore();
+  const { t } = useTranslation();
+
+  const {
+    positionTitleList,
+    totalPages,
+    totalElements,
+    rowsPerPage,
+    page,
+    handleChangePage,
+    setRowsPerPage,
+  } = positionTitleStore;
+
+  let columns = [
+    {
+      title: t("position.code"),
+      field: "code",
+      ...Config.tableCellConfig,
+    },
+    { title: t("position.name"), field: "name", ...Config.tableCellConfig },
+    {
+      title: t("position.description"),
+      field: "description",
+      ...Config.tableCellConfig,
+    },
+  ];
+  return (
+    <GlobitsTable
+      selection
+      handleSelectList={props.handleSelectListPosition}
+      data={positionTitleList}
+      columns={columns}
+      totalPages={totalPages}
+      handleChangePage={handleChangePage}
+      setRowsPerPage={setRowsPerPage}
+      pageSize={rowsPerPage}
+      pageSizeOption={[1, 2, 3, 5, 10, 25]}
+      totalElements={totalElements}
+      page={page}
+    />
+  );
+});

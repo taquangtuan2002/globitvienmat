@@ -1,0 +1,17 @@
+package com.globits.emr.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.globits.emr.domain.VisitType;
+import com.globits.emr.dto.EncounterTypeDto;
+import com.globits.emr.dto.VisitTypeDto;
+@Repository
+public interface VisitTypeRepository extends JpaRepository<VisitType, UUID>{
+	@Query("select new com.globits.emr.dto.VisitTypeDto(e) from VisitType e ")
+	List<VisitTypeDto> getAll();
+}

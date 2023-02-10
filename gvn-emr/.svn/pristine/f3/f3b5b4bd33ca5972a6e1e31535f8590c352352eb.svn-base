@@ -1,0 +1,99 @@
+import React, { useEffect } from "react";
+import { useStore } from "../../stores";
+import { useTranslation } from "react-i18next";
+import { observer } from "mobx-react";
+import { Grid, makeStyles, CardContent, Card } from "@material-ui/core";
+import { Formik, Form, useFormikContext } from "formik";
+import TotalTimeProjectList from "./TotalTimeProjectList";
+import TotalTimeChartAdmin from "./TotalTimeChartAdmin";
+import TotalTimeList from "./TotalTimeList";
+import DashboardFilter from './DashboardFilter';
+import clsx from 'clsx';
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        top: "10px",
+    },
+    card: {
+        background: "#ffffff",
+        padding: "1.25rem",
+    },
+    cardBody: {
+        display: "flex",
+        minHeight: "1px",
+    },
+    cardInfo: {
+        marginLeft: "auto",
+        fontSize: "30px",
+    },
+    cardDevider: {
+        height: "6px",
+        borderRadius: "0.25rem",
+    },
+    cardTotal: {
+        height: "100%",
+        border: "none",
+        borderRadius: "0px",
+    },
+    dashboardFilter: {
+        padding: "16px 0 0 16px",
+        [theme.breakpoints.down("xs")]: {
+            paddingLeft: "unset",
+        }
+    }
+}));
+
+export default observer(function AdminView() {
+    const { dashboardStore } = useStore();
+
+    const classes = useStyles();
+
+    const { t } = useTranslation();
+
+    const { handleFilters, searObj } = dashboardStore;
+
+    return (
+        <Grid container spacing={1}>
+            <Grid item md={4} xs={12} className="mb-16">
+                <Card className={classes.cardTotal}>
+                    <CardContent>
+                        <TotalTimeProjectList />
+                    </CardContent>
+                </Card>
+            </Grid>
+
+            <Grid item md={8} xs={12} className="mb-16">
+                <Card className={classes.cardTotal}>
+                    <CardContent>
+                        <Grid
+                            item
+                            md={12}
+                            xs={12}
+                            className={clsx("mb-16", classes.dashboardFilter)}
+                        >
+                            <Formik
+                                initialValues={searObj}
+                            >
+                                {({ isSubmitting, values, setFieldValue }) => (
+                                    <Form autoComplete="off">
+                                        <DashboardFilter />
+                                    </Form>
+                                )}
+                            </Formik>
+                        </Grid>
+
+                        <Grid item md={12} xs={12} className="mb-16">
+                            <TotalTimeList />
+                        </Grid>
+                        <Grid item md={12} xs={12} className="mb-16">
+                            <TotalTimeChartAdmin />
+                        </Grid>
+
+                    </CardContent>
+
+                </Card>
+            </Grid>
+        </Grid>
+
+    );
+});

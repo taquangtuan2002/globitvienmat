@@ -1,0 +1,105 @@
+package com.globits.emr.domain;
+
+import java.util.Date;
+import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
+
+import com.globits.core.domain.BaseObject;
+import com.globits.emr.domain.concept.Concept;
+
+@Entity
+@Table(name = "tbl_visit")
+public class Visit extends BaseObject {
+	private static final long serialVersionUID = 1L;
+
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "patient_id")
+	private Patient patient;
+	
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "visit_type_id")
+	private VisitType visitType;
+	
+	@ManyToOne
+	@JoinColumn(name = "indication_concept_id")
+	private Concept indication;
+
+	@ManyToOne
+	@JoinColumn(name = "specialist_id")
+	private Specialist specialist;//Chuyen khoa
+	
+	
+	@Column(name = "date_started", nullable = false, length = 19)
+	private Date startDatetime;
+	
+	
+	@Column(name = "date_stopped", length = 19)
+	private Date stopDatetime;
+	
+	@OneToMany(mappedBy = "visit")
+	@OrderBy("encounter_datetime desc, id desc")
+	private Set<Encounter> encounters;
+
+	public Patient getPatient() {
+		return patient;
+	}
+
+	public void setPatient(Patient patient) {
+		this.patient = patient;
+	}
+
+	public VisitType getVisitType() {
+		return visitType;
+	}
+
+	public void setVisitType(VisitType visitType) {
+		this.visitType = visitType;
+	}
+
+	public Concept getIndication() {
+		return indication;
+	}
+
+	public void setIndication(Concept indication) {
+		this.indication = indication;
+	}
+
+	public Specialist getSpecialist() {
+		return specialist;
+	}
+
+	public void setSpecialist(Specialist specialist) {
+		this.specialist = specialist;
+	}
+
+	public Date getStartDatetime() {
+		return startDatetime;
+	}
+
+	public void setStartDatetime(Date startDatetime) {
+		this.startDatetime = startDatetime;
+	}
+
+	public Date getStopDatetime() {
+		return stopDatetime;
+	}
+
+	public void setStopDatetime(Date stopDatetime) {
+		this.stopDatetime = stopDatetime;
+	}
+
+	public Set<Encounter> getEncounters() {
+		return encounters;
+	}
+
+	public void setEncounters(Set<Encounter> encounters) {
+		this.encounters = encounters;
+	}
+}

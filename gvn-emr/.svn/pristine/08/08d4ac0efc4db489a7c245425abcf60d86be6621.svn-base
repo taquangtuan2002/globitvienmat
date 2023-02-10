@@ -1,0 +1,12 @@
+package com.globits.emr.service;
+
+import java.util.UUID;
+
+import com.globits.emr.dto.EpisodeOfCareDto;
+
+public interface EpisodeOfCareService {
+EpisodeOfCareDto save(EpisodeOfCareDto dto);
+Boolean delete(UUID id);
+EpisodeOfCareDto deletevoided(UUID id);
+EpisodeOfCareDto getById(UUID id);
+}

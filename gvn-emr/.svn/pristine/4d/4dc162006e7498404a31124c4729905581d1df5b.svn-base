@@ -1,0 +1,210 @@
+package com.globits.emr.service.impl;
+
+import com.globits.core.service.impl.GenericServiceImpl;
+import com.globits.emr.domain.Encounter;
+import com.globits.emr.domain.Observation;
+import com.globits.emr.domain.Patient;
+import com.globits.emr.domain.concept.Concept;
+import com.globits.emr.dto.ObservationDto;
+import com.globits.emr.dto.search.SearchDto;
+import com.globits.emr.repository.ConceptRepository;
+import com.globits.emr.repository.EncounterRepository;
+import com.globits.emr.repository.ObservationRepository;
+import com.globits.emr.repository.PatientRepository;
+import com.globits.emr.service.ObservationService;
+import org.joda.time.LocalDateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+public class ObservationServiceImpl extends GenericServiceImpl<Observation, UUID> implements ObservationService {
+    @Autowired
+    private ObservationRepository observationRepos;
+
+    @Autowired
+    private ConceptRepository conceptRepos;
+
+    @Autowired
+    private EncounterRepository encounterRepos;
+
+    @Autowired
+    private PatientRepository patientRepos;
+
+    @PersistenceContext
+    EntityManager manager;
+
+    @Override
+    public List<Observation> getAll() {
+        return observationRepos.findAll();
+    }
+
+    @Override
+    public Observation saveOrUpdate(ObservationDto dto) {
+        if(dto != null) {
+            Observation observation = null;
+            if(dto.getId() != null) {
+                Optional<Observation> observationOptional = observationRepos.findById(dto.getId());
+                if(observationOptional.isPresent()) {
+                    observation = observationOptional.get();
+                    observation.setModifyDate(LocalDateTime.now());
+                }
+            }
+            if(observation == null) {
+                observation = new Observation();
+                observation.setCreateDate(LocalDateTime.now());
+                observation.setModifyDate(LocalDateTime.now());
+            }
+            // Concept
+            if(dto.getConceptCode() != null) {
+                Concept concept = conceptRepos.getByCode(dto.getConceptCode());
+                if(concept != null) {
+                    observation.setConcept(concept);
+                }
+            }
+            // Encounter
+            if(dto.getEncounter() != null && dto.getEncounter().getId() != null) {
+                Encounter encounter = null;
+                Optional<Encounter> encounterOptional = encounterRepos.findById(dto.getEncounter().getId());
+                if(encounterOptional.isPresent()) {
+                    encounter = encounterOptional.get();
+                    observation.setEncounter(encounter);
+                }
+            }
+            // Patient
+            if(dto.getPatient() != null && dto.getPatient().getId() != null) {
+                Patient patient = null;
+                Optional<Patient> patientOptional = patientRepos.findById(dto.getPatient().getId());
+                if(patientOptional.isPresent()) {
+                    patient = patientOptional.get();
+                    observation.setPatient(patient);
+                }
+            }
+            if(dto.getValueNumeric() != null) {
+                observation.setValueNumeric(dto.getValueNumeric());
+            }
+            if(dto.getValueText() != null) {
+                observation.setValueText(dto.getValueText());
+            }
+            if(dto.getValueDate() != null) {
+                observation.setValueDate(dto.getValueDate());
+            }
+            if(dto.getValueBoolean() != null) {
+                observation.setValueBoolean(dto.getValueBoolean());
+            }
+            // Value coded
+            if(dto.getValueCoded() != null) {
+                Concept valueCoded = conceptRepos.getByCode(dto.getValueCoded());
+                if(valueCoded != null) {
+                    observation.setConcept(valueCoded);
+                }
+            }
+            if(dto.getComments() != null) {
+                observation.setComments(dto.getComments());
+            }
+            observation = observationRepos.save(observation);
+            return observation;
+        }
+        return  null;
+    }
+
+    @Override
+    public Boolean deleteById(UUID id) {
+        if(id != null) {
+            Observation observation = null;
+            Optional<Observation> observationOptional = observationRepos.findById(id);
+            if(observationOptional.isPresent()) {
+                observationRepos.deleteById(id);
+                return true;
+            }
+        }
+        return  false;
+    }
+
+    @Override
+    public Observation getDtoById(UUID id) {
+        if(id != null) {
+            return observationRepos.getOne(id);
+        }
+        return null;
+    }
+
+    @Override
+    public void updateVoided(UUID id) {
+        if(id != null) {
+            Authentication authencation = SecurityContextHolder.getContext().getAuthentication();
+            String currentUsername = "Unknown User";
+            if(authencation != null) {
+                currentUsername = authencation.getName();
+            }
+            Observation observation = null;
+            Optional<Observation> observationOptional = observationRepos.findById(id);
+            if(observationOptional.isPresent()) {
+                observation = observationOptional.get();
+                observation.setModifyDate(LocalDateTime.now());
+                observation.setModifiedBy(currentUsername);
+                observation.setVoided(true);
+            }
+        }
+    }
+
+    @Override
+    public Boolean deleteFakeVoided(UUID id) {
+        if(id != null) {
+            Observation observation = null;
+            Optional<Observation> observationOptional = observationRepos.findById(id);
+            if(observationOptional.isPresent()) {
+                this.updateVoided(id);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public Page<ObservationDto> searchByPage(SearchDto searchDto) {
+        if(searchDto != null) {
+            int pageIndex = searchDto.getPageIndex();
+            int pageSize = searchDto.getPageSize();
+            if(pageIndex > 0) {
+                pageIndex = pageIndex - 1;
+            } else {
+                pageIndex = 0;
+            }
+            String whereClause = "";
+            String sql = "Select new com.globits.emr.dto.ObservationDto(entity) From Observation entity Where (1=1) ";
+            String sqlCount = "Select count(entity.id) From HealthCareRoom as entity Where (1=1) ";
+            String orderBy = "Order by entity.dateCreate DESC";
+
+            sql += whereClause;
+            sqlCount += whereClause;
+            // Where clause
+            Query q = manager.createQuery(sql, ObservationDto.class);
+            Query qCount = manager.createQuery(sqlCount);
+
+            int startPosition = pageIndex*pageSize;
+            q.setFirstResult(startPosition);
+            q.setMaxResults(pageSize);
+            List<ObservationDto> results = q.getResultList();
+            if(results == null || results.size() == 0) {
+                return null;
+            }
+            long numberResult = (long) qCount.getSingleResult();
+            Pageable pageable = PageRequest.of(pageIndex, pageSize);
+            return new PageImpl<>(results, pageable, numberResult);
+        }
+        return null;
+    }
+}

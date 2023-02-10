@@ -1,0 +1,543 @@
+package com.globits.emr.service.impl;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.joda.time.LocalDateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import com.globits.core.domain.AdministrativeUnit;
+import com.globits.core.domain.Country;
+import com.globits.core.domain.Person;
+import com.globits.core.domain.Profession;
+import com.globits.core.dto.CountryDto;
+import com.globits.core.repository.AdministrativeUnitRepository;
+import com.globits.core.repository.CountryRepository;
+import com.globits.core.repository.PersonRepository;
+import com.globits.core.repository.ProfessionRepository;
+import com.globits.core.service.AdministrativeUnitService;
+import com.globits.core.service.PersonService;
+import com.globits.core.service.impl.GenericServiceImpl;
+import com.globits.emr.domain.Patient;
+import com.globits.emr.domain.PersonAttribute;
+import com.globits.emr.domain.PersonAttributeType;
+import com.globits.emr.dto.PatientDto;
+import com.globits.emr.dto.ieh.IehPatientDto;
+import com.globits.emr.dto.search.SearchDto;
+import com.globits.emr.repository.PatientRepository;
+import com.globits.emr.repository.PersonAttributeRepository;
+import com.globits.emr.repository.PersonAttributeTypeRepository;
+import com.globits.emr.service.PatientService;
+import com.globits.emr.service.PersonAttributeService;
+
+
+@Service
+@Transactional
+public class PatientServiceImpl extends GenericServiceImpl<Patient, UUID> implements PatientService{
+	@PersistenceContext
+    EntityManager manager;
+	@Autowired 
+	PatientRepository repos;
+	@Autowired 
+	CountryRepository countryRepos;
+	@Autowired 
+	ProfessionRepository professRepos;
+	@Autowired
+	PersonService personService;
+	@Autowired
+	PersonRepository personRepos;
+	@Autowired
+	AdministrativeUnitService adminiService;
+	@Autowired
+	AdministrativeUnitRepository adminiRepos;
+	@Autowired
+	PersonAttributeTypeRepository personAttrTypeRepos;
+	@Autowired
+	PersonAttributeRepository personAtrrRepos;
+	
+
+	@Override
+	public IehPatientDto saveOrUpdateIehPatient(UUID id, IehPatientDto dto) {
+		if (dto != null && dto.getPatientCode() != null && StringUtils.hasText(dto.getPatientCode())) {
+			Patient entity = null;
+			PersonAttribute entityPA1 = null;
+			PersonAttribute entityPA = null;
+			if(id!=null) {
+				Optional<Patient> patientOptional = repos.findById(id);
+				if (patientOptional.isPresent()) {
+                    entity = patientOptional.get();
+                }
+			}
+			if(entity==null&& dto.getId()!=null) {
+				Optional<Patient> patientOptional = repos.findById(dto.getId());
+				if (patientOptional.isPresent()) {
+                    entity = patientOptional.get();
+                }
+			}
+            if (entity == null) {
+                entity = new Patient();
+                entity.setCreateDate(LocalDateTime.now());
+                entity.setModifyDate(LocalDateTime.now());
+            }
+            if(dto.getPatientCode()!=null) {
+            entity.setCode(dto.getPatientCode());
+            }
+            if(dto.getDisplayName()!=null) {
+            	entity.setDisplayName(dto.getDisplayName());
+            }
+            Date date = null;
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            String dateInString = "1900-01-01";
+            try {
+                date = formatter.parse(dateInString);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            if(dto.getBirthDate()!=null&& !dto.getBirthDate().before(date)) {
+            	entity.setBirthDate(dto.getBirthDate());
+            }
+            if(dto.getGender()!=null) {
+            	entity.setGender(dto.getGender());
+            }
+            if(dto.getEmail()!=null) {
+            	entity.setEmail(dto.getEmail());
+            }
+            if(dto.getPhoneNumber()!=null) {
+            	entity.setPhoneNumber(dto.getPhoneNumber());
+            }
+            if (dto.getCountry() != null && dto.getCountry().getId() != null) {
+                Optional<Country> optionalCountry = countryRepos.findById(dto.getCountry().getId());
+                if (optionalCountry.isPresent()) {
+                	Country ct = optionalCountry.get();
+                	entity.setNationality(ct);
+                }
+            }
+            if (dto.getProfession() != null) {
+                Optional<Profession> optionalProfession = professRepos.findById(dto.getProfession().getId());
+                if (optionalProfession.isPresent()) {
+                	Profession pr = optionalProfession.get();
+                	entity.setCarrer(pr.getName());
+                }
+            }
+            if(dto.getCurrentWard()!=null) {
+            	Optional<AdministrativeUnit> optionalAdmini = adminiRepos.findById(dto.getCurrentWard().getId());
+                if (optionalAdmini.isPresent()) {
+                	AdministrativeUnit cw = optionalAdmini.get();
+                	if(cw.getParent()!=null) {
+	                	if(cw.getParent().getParent()!=null) {
+	                		entity.setCurrentResidence(cw);
+	                    	entity.setCurrentDetailResidence(
+	                    			cw.getName()
+	                    			+", "+cw.getParent().getName()
+	                    			+", "+cw.getParent().getParent().getName()
+	                    			);
+	                	}
+                	}
+                }
+            }
+            if(dto.getPermanentWard()!=null) {
+            	Optional<AdministrativeUnit> optionalAdmini = adminiRepos.findById(dto.getPermanentWard().getId());
+                if (optionalAdmini.isPresent()) {
+                	AdministrativeUnit pw = optionalAdmini.get();
+                	if(pw.getParent()!=null) {
+	                	if(pw.getParent().getParent()!=null) {
+	                		entity.setPermanentDetailResidence(
+	                    			pw.getName()
+	                    			+", "+pw.getParent().getName()
+	                    			+", "+pw.getParent().getParent().getName()
+	                    			);
+	                    	entity.setPermanentResidence(pw);
+	                	}
+                	}
+                }
+            }
+            
+            //add Person&Patient
+            Person person=personRepos.save(entity);
+            entity = repos.save(entity);
+            //add PersonAttribute
+           
+            if (entity != null&&person!=null) {
+	            if(dto.getHealthInsuranceNumber()!=null) {
+	            	PersonAttributeType personAttrType = personAttrTypeRepos.findByCode("BHYT");
+	                if (personAttrType!=null) {
+	                	if (person!= null) {
+	                        if (person.getId() != null&&dto.getId()!=null) {
+	                        	if (!dto.getId().equals(id)) {
+	                            return null;
+	                        	}
+	                        }
+	                        entityPA = personAtrrRepos.findByIDPersonANDPersonAttributeType(person.getId(),personAttrType.getId());
+	                        if (entityPA!=null) {
+	                        	entityPA.setModifyDate(LocalDateTime.now());
+	                        }else {
+		                    	entityPA = new PersonAttribute();
+		                    	entityPA.setCreateDate(LocalDateTime.now());
+		                        entityPA.setModifyDate(LocalDateTime.now());
+	                        }
+	                    entityPA.setPersonAttributeType(personAttrType);
+	                    entityPA.setPerson(person);
+	                    entityPA.setValue(dto.getHealthInsuranceNumber());
+	                    personAtrrRepos.save(entityPA);
+		                }
+		            }
+	            }
+	            if(dto.getRegistrationCode()!=null) {
+	            	PersonAttributeType personAttrType = personAttrTypeRepos.findByCode("registration_code");
+	                if (personAttrType!=null) {
+	                	if (person!= null) {
+	                		 if (person.getId() != null&&dto.getId()!=null) {
+		                        	if (!dto.getId().equals(id)) {
+		                            return null;
+		                        	}
+		                        }
+	                        entityPA1 = personAtrrRepos.findByIDPersonANDPersonAttributeType(person.getId(),personAttrType.getId());
+	                        if (entityPA1!=null) {
+	                        	entityPA1.setModifyDate(LocalDateTime.now());
+	                        }else {
+		                    	entityPA1 = new PersonAttribute();
+		                    	entityPA1.setCreateDate(LocalDateTime.now());
+		                        entityPA1.setModifyDate(LocalDateTime.now());
+	                        }
+	                        entityPA1.setPersonAttributeType(personAttrType);
+		                    entityPA1.setPerson(person);
+		                    entityPA1.setValue(dto.getRegistrationCode());
+		                    personAtrrRepos.save(entityPA1);
+		                }
+	                }
+	            }
+            }
+            return new IehPatientDto(entity, entityPA, entityPA1);
+        }
+        return null;
+	}
+	
+	@Override
+	public Patient saveOrUpdate(UUID id, PatientDto dto) {
+		if (dto != null && dto.getCode() != null && StringUtils.hasText(dto.getCode())) {
+			Patient entity = null;
+			if(id!=null) {
+				Optional<Patient> patientOptional = repos.findById(id);
+				if (patientOptional.isPresent()) {
+                    entity = patientOptional.get();
+                }
+			}
+			if(entity==null&& dto.getId()!=null) {
+				Optional<Patient> patientOptional = repos.findById(dto.getId());
+				if (patientOptional.isPresent()) {
+                    entity = patientOptional.get();
+                }
+			}
+            if (entity == null) {
+                entity = new Patient();
+                entity.setCreateDate(LocalDateTime.now());
+                entity.setModifyDate(LocalDateTime.now());
+            }
+            entity.setCode(dto.getCode());
+            if(dto.getFirstName()!=null) {
+            	entity.setFirstName(dto.getFirstName());
+            }
+            if(dto.getVoided()!=null) {
+            	entity.setVoided(dto.getVoided());
+            }
+            if(dto.getLastName()!=null) {
+            	entity.setLastName(dto.getLastName());
+            }
+            if(dto.getShortName()!=null) {
+            	entity.setShortName(dto.getShortName());
+            }
+            if(dto.getFirstName()!=null&&dto.getLastName()!=null) {
+            	entity.setDisplayName(dto.getLastName()+" "+dto.getFirstName());
+            }
+            if(dto.getCommunistPartyJoinDate()!=null) {
+            	entity.setCommunistPartyJoinDate(dto.getCommunistPartyJoinDate());
+            }
+            if(dto.getCommunistYouthUnionJoinDate()!=null) {
+            	entity.setCommunistYouthUnionJoinDate(dto.getCommunistYouthUnionJoinDate());
+            }
+            Date date = null;
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            String dateInString = "1900-01-01";
+            try {
+                date = formatter.parse(dateInString);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            if(dto.getBirthDate()!=null&& !dto.getBirthDate().before(date)) {
+            	entity.setBirthDate(dto.getBirthDate());
+            }
+            if(dto.getBirthPlace()!=null) {
+            	entity.setBirthPlace(dto.getBirthPlace());
+            }
+            if(dto.getGender()!=null) {
+            	entity.setGender(dto.getGender());
+            }
+            if(dto.getEmail()!=null) {
+            	entity.setEmail(dto.getEmail());
+            }
+            if(dto.getEndDate()!=null) {
+            	entity.setEndDate(dto.getEndDate());
+            }
+            if(dto.getIdNumber()!=null) {
+            	entity.setIdNumber(dto.getIdNumber());
+            }
+            if(dto.getIdNumberIssueBy()!=null) {
+            	entity.setIdNumberIssueBy(dto.getIdNumberIssueBy());
+            }
+            if(dto.getIdNumberIssueDate()!=null) {
+            	entity.setIdNumberIssueDate(dto.getIdNumberIssueDate());
+            }
+            if(dto.getImagePath()!=null) {
+            	entity.setImagePath(dto.getImagePath());
+            }
+            if(dto.getPhoneNumber()!=null) {
+            	entity.setPhoneNumber(dto.getPhoneNumber());
+            }
+            if(dto.getCarrer()!=null) {
+            	entity.setCarrer(dto.getCarrer());
+            }
+            if(dto.getMaritalStatus()!=null) {
+            	entity.setMaritalStatus(dto.getMaritalStatus());
+            }
+            if(dto.getPhoto()!=null) {
+            	entity.setPhoto(dto.getPhoto());
+            }
+            if(dto.getPhotoCropped()!=null) {
+            	entity.setPhotoCropped(dto.getPhotoCropped());
+            }
+            if (dto.getNationality() != null && dto.getNationality().getId() != null) {
+                Optional<Country> optionalCountry = countryRepos.findById(dto.getNationality().getId());
+                if (optionalCountry.isPresent()) {
+                	Country ct = optionalCountry.get();
+                	entity.setNationality(ct);
+                }
+            }
+            personService.save(entity);
+            entity = repos.save(entity);
+            return entity;
+        }
+        return null;
+	}
+
+	@Override
+	public Boolean deleteById(UUID id) {
+		if (id != null) {
+			Patient entity = null;
+			Optional<Patient> patientOptional = repos.findById(id);
+            if (patientOptional.isPresent()) {
+            	entity = patientOptional.get();
+            }
+            if (entity != null) {
+            	List<PersonAttribute> patientList = personAtrrRepos.findByIDPerson(entity.getId());
+            	if(patientList!=null) {
+            		for(PersonAttribute o:patientList) {
+                		personAtrrRepos.delete(o);
+                	}
+            	}
+            repos.deleteById(id);
+            return true;
+            }
+        }
+        return false;
+	}
+	@Override
+	public void updateVoided(UUID id) {
+		if(id != null) {
+			Authentication authencation = SecurityContextHolder.getContext().getAuthentication();
+			String currentUsername = "Unknown User";
+			if(authencation != null) {
+				currentUsername = authencation.getName();
+			}
+			Patient entity = null;
+			Optional<Patient> patientOptional = repos.findById(id);
+			if(patientOptional.isPresent()) {
+				entity = patientOptional.get();
+			}
+			if(entity != null) {
+				entity.setModifyDate(LocalDateTime.now());
+				entity.setModifiedBy(currentUsername);
+			}
+			entity.setVoided(false);
+		}
+		
+	}
+	
+	@Override
+	public Boolean deleteFakeVoided(UUID id) {
+		if(id != null) {
+			Patient entity = null;
+			Optional<Patient> patientOptional = repos.findById(id);
+			if(patientOptional.isPresent()) {
+				entity = patientOptional.get();
+			}
+			if(entity != null) {
+				this.updateVoided(id);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public Patient getPatient(UUID id) {
+		Patient entity = null;
+        Optional<Patient> patientOptional = repos.findById(id);
+        if (patientOptional.isPresent()) {
+            entity = patientOptional.get();
+        }
+        if (entity != null) {
+            return entity;
+        }
+        return null;
+	}
+	
+	@Override
+	public IehPatientDto getIehPatient(UUID id) {
+		Patient entity = null;
+		PersonAttribute entityPA1 = null;
+		PersonAttribute entityPA = null;
+        Optional<Patient> patientOptional = repos.findById(id);
+        if (patientOptional.isPresent()) {
+            entity = patientOptional.get();
+        }
+        if (entity != null) {
+            	PersonAttributeType personAttrType = personAttrTypeRepos.findByCode("BHYT");
+                if (personAttrType!=null) {
+                    entityPA = personAtrrRepos.findByIDPersonANDPersonAttributeType(entity.getId(),personAttrType.getId());
+                }
+                PersonAttributeType personAttrType1 = personAttrTypeRepos.findByCode("registration_code");
+                if (personAttrType!=null) {
+                    entityPA1 = personAtrrRepos.findByIDPersonANDPersonAttributeType(entity.getId(),personAttrType1.getId());
+                }
+            return new IehPatientDto(entity,entityPA,entityPA1);
+        }
+        return null;
+	}
+
+	@Override
+	public Page<PatientDto> searchByPage(SearchDto dto) {
+		if (dto == null) {
+            return null;
+        }
+
+        int pageIndex = dto.getPageIndex();
+        int pageSize = dto.getPageSize();
+
+        if (pageIndex > 0) {
+            pageIndex--;
+        } else {
+            pageIndex = 0;
+        }
+
+        String whereClause = "";
+
+        String orderBy = " ORDER BY entity.createDate DESC";
+
+        String sqlCount = "select count(entity.id) from Patient as entity where (1=1)   ";
+        String sql = "select new com.globits.emr.dto.PatientDto(entity) from Patient as entity where (1=1)  ";
+
+        if (dto.getKeyword() != null && StringUtils.hasText(dto.getKeyword())) {
+            whereClause += " AND ( entity.code LIKE :text )";
+        }
+
+        sql += whereClause + orderBy;
+        sqlCount += whereClause;
+
+        Query q = manager.createQuery(sql, PatientDto.class);
+        Query qCount = manager.createQuery(sqlCount);
+
+        if (dto.getKeyword() != null && StringUtils.hasText(dto.getKeyword())) {
+            q.setParameter("text", '%' + dto.getKeyword() + '%');
+            qCount.setParameter("text", '%' + dto.getKeyword() + '%');
+        }
+        int startPosition = pageIndex * pageSize;
+        q.setFirstResult(startPosition);
+        q.setMaxResults(pageSize);
+        List<PatientDto> entities = q.getResultList();
+        long count = (long) qCount.getSingleResult();
+
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        return new PageImpl<>(entities, pageable, count);
+	}
+	
+	@Override
+	public Page<IehPatientDto> searchByPageIeh(SearchDto dto) {
+		if (dto == null) {
+            return null;
+        }
+        int pageIndex = dto.getPageIndex();
+        int pageSize = dto.getPageSize();
+
+        if (pageIndex > 0) {
+            pageIndex--;
+        } else {
+            pageIndex = 0;
+        }
+
+        String whereClause = "";
+
+        String orderBy = " ORDER BY entity.createDate DESC";
+
+        String sqlCount = "select count(entity.id) from Patient as entity where (1=1)   ";
+        String sql = "select new com.globits.emr.dto.ieh.IehPatientDto(entity,"
+        		+ "(select person_attribute from PersonAttribute person_attribute RIGHT JOIN Person AS entity_person ON person_attribute.person.id= entity_person.id where person_attribute.personAttributeType.code='BHYT' AND entity_person.id=entity.id),"
+        		+ "(select person_attribute from PersonAttribute person_attribute RIGHT JOIN Person AS entity_person ON person_attribute.person.id= entity_person.id where person_attribute.personAttributeType.code='registration_code' AND entity_person.id=entity.id)) "
+        		+ "from Patient as entity "
+        		+ "JOIN Person AS entity_person ON entity.id= entity_person.id where (1=1)  ";
+
+        if (dto.getKeyword() != null && StringUtils.hasText(dto.getKeyword())) {
+            whereClause += " AND ( entity.patientCode LIKE :text )";
+        }
+
+        sql += whereClause + orderBy;
+        sqlCount += whereClause;
+
+        Query q = manager.createQuery(sql, IehPatientDto.class);
+        Query qCount = manager.createQuery(sqlCount);
+
+        if (dto.getKeyword() != null && StringUtils.hasText(dto.getKeyword())) {
+            q.setParameter("text", '%' + dto.getKeyword() + '%');
+            qCount.setParameter("text", '%' + dto.getKeyword() + '%');
+        }
+        int startPosition = pageIndex * pageSize;
+        q.setFirstResult(startPosition);
+        q.setMaxResults(pageSize);
+        List<IehPatientDto> entities = q.getResultList();
+        long count = (long) qCount.getSingleResult();
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        return new PageImpl<>(entities, pageable, count);
+	}
+
+	@Override
+	public Boolean checkCode(UUID id, String code) {
+		if (StringUtils.hasText(code)) {
+            Long count = repos.checkCode(code, id);
+            return count != 0L;
+        }
+        return null;
+	}
+
+	
+
+
+
+}

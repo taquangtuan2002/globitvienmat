@@ -1,0 +1,455 @@
+import React, { useEffect, useState } from "react";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import { useTranslation } from "react-i18next";
+import moment from "moment";
+import {
+  Dialog,
+  IconButton,
+  Typography,
+  withStyles,
+  Grid,
+  DialogActions,
+  Button,
+  DialogContent,
+} from "@material-ui/core";
+import MuiDialogTitle from "@material-ui/core/DialogTitle";
+import CloseIcon from "@material-ui/icons/Close";
+import Paper from "@material-ui/core/Paper";
+import Draggable from "react-draggable";
+
+import GlobitsDateTimePicker from "app/common/form/GlobitsDateTimePicker";
+import GlobitsTextField from "app/common/form/GlobitsTextField";
+import GlobitsPagingAutocomplete from "app/common/form/GlobitsPagingAutocomplete";
+import GlobitsCheckBox from "app/common/form/GlobitsCheckBox";
+
+import { pagingCountry } from "app/views/Country/CountryService";
+
+function PaperComponent(props) {
+  return (
+    <div className="paper-container">
+      <Draggable
+        handle="#draggable-dialog-title"
+        cancel={'[class*="MuiDialogContent-root"]'}
+      >
+        <Paper {...props} />
+      </Draggable>
+    </div>
+  );
+}
+
+const styles = (theme) => ({
+  root: {
+    margin: 0,
+    padding: theme.spacing(2),
+  },
+  closeButton: {
+    position: "absolute",
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+});
+
+const DialogTitle = withStyles(styles)((props) => {
+  const { children, classes, onClose, ...other } = props;
+  return (
+    <MuiDialogTitle disableTypography className={classes.root} {...other}>
+      <Typography variant="h6">{children}</Typography>
+      {onClose ? (
+        <IconButton
+          aria-label="close"
+          className={classes.closeButton}
+          onClick={onClose}
+        >
+          <CloseIcon />
+        </IconButton>
+      ) : null}
+    </MuiDialogTitle>
+  );
+});
+
+export default function SearchPopup(props) {
+  const { t } = useTranslation();
+  const { open, handleClose, item, handleSubmit, editable } = props;
+
+  const initialItem = {
+    startDate: null,
+    endDate: null,
+
+    actualGraduationYear: null,
+    returnDate: null,
+
+    educationalInstitution: null,
+    country: null,
+
+    decisionCode: null,
+    decisionDate: null,
+
+    fundingSource: null,
+
+    extendDateByDecision: null,
+    extendDecisionCode: null,
+    extendDecisionDate: null,
+
+    speciality: null,
+    major: null,
+    educationType: null,
+
+    educationDegree: null,
+    isConfirmation: false,
+
+    basis: "",
+    description: "",
+
+    isCurrent: false,
+    isCountedForSeniority: false,
+    isExtended: false,
+    notFinish: false,
+  };
+
+  const validationSchema = Yup.object({
+    startDate: Yup.date()
+      .transform(function transformDate(castValue, originalValue) {
+        return originalValue ? new Date(originalValue) : castValue;
+      })
+      .required(t("validation.required"))
+      .typeError("Ngày nhập học không đúng định dạng")
+      .nullable(),
+
+    endDate: Yup.date()
+      .test(
+        "is-greater",
+        "Ngày tốt nghiệp phải lớn ngày nhập học",
+        function (value) {
+          const { startDate } = this.parent;
+          if (startDate && value) {
+            return moment(value).isAfter(moment(startDate), "date");
+          }
+          return true;
+        }
+      )
+      .transform(function transformDate(castValue, originalValue) {
+        return originalValue ? new Date(originalValue) : castValue;
+      })
+      .required(t("validation.required"))
+      .typeError("Ngày tốt nghiệp không đúng định dạng")
+      .nullable(),
+
+    educationalInstitution: Yup.object()
+      .required(t("validation.required"))
+      .nullable(),
+    country: Yup.object().required(t("validation.required")).nullable(),
+    speciality: Yup.object().required(t("validation.required")).nullable(),
+    educationType: Yup.object().required(t("validation.required")).nullable(),
+    educationDegree: Yup.object().required(t("validation.required")).nullable(),
+
+    extendDateByDecision: Yup.date()
+      .test(
+        "is-greater",
+        "Ngày gia hạn phải lớn ngày quyết định số",
+        function (value) {
+          const { decisionDate } = this.parent;
+          if (decisionDate && value) {
+            return moment(value).isAfter(moment(decisionDate), "date");
+          }
+          return true;
+        }
+      )
+      .transform(function transformDate(castValue, originalValue) {
+        return originalValue ? new Date(originalValue) : castValue;
+      })
+      .typeError("Ngày không đúng định dạng")
+      .nullable(true),
+
+    extendDecisionDate: Yup.date()
+      .test(
+        "is-greater",
+        "Ngày quyết định gia hạn phải lớn ngày gia hạn",
+        function (value) {
+          const { decisionDate } = this.parent;
+          if (decisionDate && value) {
+            return moment(value).isAfter(moment(decisionDate), "date");
+          }
+          return true;
+        }
+      )
+      .transform(function transformDate(castValue, originalValue) {
+        return originalValue ? new Date(originalValue) : castValue;
+      })
+      .typeError("Ngày không đúng định dạng")
+      .nullable(true),
+  });
+
+  const [formValues, setFormValues] = useState(null);
+
+  useEffect(() => {
+    if (item) {
+      setFormValues({ ...item });
+    } else {
+      setFormValues({ ...initialItem });
+    }
+  }, [item]);
+
+  return (
+    <Dialog
+      className="dialog-container"
+      open={open}
+      PaperComponent={PaperComponent}
+      fullWidth
+      maxWidth="md"
+    >
+      <DialogTitle
+        className="dialogHeader"
+        style={{ cursor: "pointer", backgroundColor: "#01C0C8" }}
+        id="draggable-dialog-title"
+      >
+        <span className="mb-20" style={{ color: "#ffffff" }}>
+          {editable ? t("general.button.add") : t("general.button.edit")}{" "}
+          {t("educationHistory.title")}
+        </span>
+      </DialogTitle>
+      <Formik
+        initialValues={formValues}
+        onSubmit={(values) => handleSubmit(values)}
+        validationSchema={validationSchema}
+      >
+        {({ isSubmitting }) => (
+          <Form
+            autoComplete="off"
+            style={{ overflow: "auto", maxHeight: "90vh" }}
+          >
+            <DialogContent
+              className="dialog-body"
+              style={{ minWidth: "300px" }}
+            >
+              <Grid container spacing={3}>
+                <Grid item container spacing={1} xs={12} md={6}>
+                  <Grid item xs={12} md={6}>
+                    <GlobitsDateTimePicker
+                      label={
+                        <span>
+                          {t("educationHistory.startDateOfQD")}
+                          <span className="text-danger"> * </span>
+                        </span>
+                      }
+                      name="startDate"
+                      disableFuture={true}
+                      // disabled={!editable}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <GlobitsDateTimePicker
+                      label={
+                        <span>
+                          {t("educationHistory.endDateOfQD")}
+                          <span className="text-danger"> * </span>
+                        </span>
+                      }
+                      name="endDate"
+                      disableFuture={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <GlobitsDateTimePicker
+                      label={t("educationHistory.endDate")}
+                      name="actualGraduationYear"
+                      disableFuture={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <GlobitsDateTimePicker
+                      label={t("educationHistory.returnDate")}
+                      name="returnDate"
+                      disableFuture={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <GlobitsPagingAutocomplete
+                      label={
+                        <span>
+                          {t("educationHistory.educationalInstitution")}
+                          <span className="text-danger"> * </span>
+                        </span>
+                      }
+                      name="educationalInstitution"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <GlobitsPagingAutocomplete
+                      label={
+                        <span>
+                          {t("educationHistory.country")}
+                          <span className="text-danger"> * </span>
+                        </span>
+                      }
+                      name="country"
+                      api={pagingCountry}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <GlobitsTextField
+                      label={t("educationHistory.decisionNumber")}
+                      name="decisionCode"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <GlobitsDateTimePicker
+                      label={t("educationHistory.date")}
+                      name="decisionDate"
+                      disableFuture={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <GlobitsTextField
+                      label={t("educationHistory.fundingSource")}
+                      name="fundingSource"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <GlobitsDateTimePicker
+                      label={t("educationHistory.extendDateByDecision")}
+                      name="extendDateByDecision"
+                      disableFuture={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <GlobitsTextField
+                      label={t("educationHistory.decisionNumber")}
+                      name="extendDecisionCode"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <GlobitsDateTimePicker
+                      label={t("educationHistory.date")}
+                      name="extendDecisionDate"
+                      disableFuture={true}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid item container spacing={1} xs={12} md={6}>
+                  <Grid item xs={12} md={12}>
+                    <GlobitsPagingAutocomplete
+                      label={
+                        <span>
+                          {t("educationHistory.speciality")}
+                          <span className="text-danger"> * </span>
+                        </span>
+                      }
+                      name="speciality"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <GlobitsPagingAutocomplete
+                      label={t("educationHistory.major")}
+                      name="major"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <GlobitsPagingAutocomplete
+                      label={
+                        <span>
+                          {t("educationHistory.formsOfTraining")}
+                          <span className="text-danger"> * </span>
+                        </span>
+                      }
+                      name="educationType"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={8}>
+                    <GlobitsPagingAutocomplete
+                      label={
+                        <span>
+                          {t("educationHistory.degree")}
+                          <span className="text-danger"> * </span>
+                        </span>
+                      }
+                      name="educationDegree"
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}
+                    sm={4}
+                    style={{ paddingTop: "25px", paddingLeft: "20px" }}
+                  >
+                    <GlobitsCheckBox
+                      label={t("educationHistory.isConfirmation")}
+                      name="isConfirmation"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <GlobitsTextField
+                      label={t("educationHistory.basis")}
+                      name="basis"
+                      multiline
+                      rows={4}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <GlobitsTextField
+                      label={t("educationHistory.note")}
+                      name="description"
+                      multiline
+                      rows={4}
+                    />
+                  </Grid>
+                  <Grid item container xs={12} md={12} spacing={1}>
+                    <Grid item xs={6} sm={3} md={6}>
+                      <GlobitsCheckBox
+                        label={t("educationHistory.isCurrent")}
+                        name="isCurrent"
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={3} md={6}>
+                      <GlobitsCheckBox
+                        label={t("educationHistory.isCountedForSeniority")}
+                        name="isCountedForSeniority"
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={3} md={6}>
+                      <GlobitsCheckBox
+                        label={t("educationHistory.isExtended")}
+                        name="isExtended"
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={3} md={6}>
+                      <GlobitsCheckBox
+                        label={t("educationHistory.notFinish")}
+                        name="notFinish"
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </DialogContent>
+
+            <DialogActions className="dialog-footer p-0">
+              <div className="flex flex-space-between flex-middle">
+                <Button
+                  variant="contained"
+                  className="mr-12 btn btn-secondary d-inline-flex"
+                  color="secondary"
+                  onClick={() => {
+                    handleClose();
+                  }}
+                >
+                  {t("general.button.close")}
+                </Button>
+                <Button
+                  className="mr-0 btn btn-primary d-inline-flex"
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {t("general.button.save")}
+                </Button>
+              </div>
+            </DialogActions>
+          </Form>
+        )}
+      </Formik>
+    </Dialog>
+  );
+}

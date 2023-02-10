@@ -1,0 +1,22 @@
+import ConstantList from "./appConfig";
+
+export const navigations = [
+  {
+    name: "navigation.country",
+    path: ConstantList.ROOT_PATH + "category/country",
+
+    isVisible: true,
+  },
+  {
+    name: "navigation.ethnics",
+    path: ConstantList.ROOT_PATH + "category/ethnics",
+
+    isVisible: true,
+  },
+  {
+    name: "navigation.userInformation",
+    path: ConstantList.ROOT_PATH + "category/profile",
+
+    isVisible: true,
+  },
+];

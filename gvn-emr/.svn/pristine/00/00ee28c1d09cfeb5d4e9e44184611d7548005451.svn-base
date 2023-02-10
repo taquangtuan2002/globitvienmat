@@ -1,0 +1,22 @@
+package com.globits.emr.service;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import com.globits.core.service.GenericService;
+import com.globits.emr.domain.concept.Concept;
+import com.globits.emr.dto.concept.ConceptDto;
+import com.globits.emr.dto.search.SearchDto;
+
+public interface ConceptService extends GenericService<Concept, UUID>{
+	    ConceptDto saveOrUpdate(UUID id, ConceptDto dto);
+
+	    Boolean deleteById(UUID id);
+
+	    ConceptDto getConcept(UUID id);
+
+	    Page<ConceptDto> searchByPage(SearchDto dto);
+
+	    Boolean checkCode(UUID id, String code);
+
+}

@@ -1,0 +1,24 @@
+import { createContext, useContext } from "react";
+import RoleStore from "./views/Role/RoleStore";
+import EthnicsStore from "./views/Ethnics/EthnicsStore";
+import CountryStore from "./views/Country/CountryStore";
+import UserStore from "./views/User/UserStore";
+import DepartmentStore from "./views/Department/DepartmentStore";
+import DashboardStore from "./views/dashboard/DashboardStore";
+import ProfileStore from "./views/profile/ProfileStore";
+
+export const store = {
+  roleStore: new RoleStore(),
+  ethnicsStore: new EthnicsStore(),
+  countryStore: new CountryStore(),
+  userStore: new UserStore(),
+  departmentStore: new DepartmentStore(),
+  dashboardStore: new DashboardStore(),
+  profileStore: new ProfileStore(),
+};
+
+export const StoreContext = createContext(store);
+
+export function useStore() {
+  return useContext(StoreContext);
+}

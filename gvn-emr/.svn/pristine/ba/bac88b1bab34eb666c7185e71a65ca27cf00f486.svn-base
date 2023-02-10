@@ -1,0 +1,118 @@
+import React, { useEffect, useState } from "react";
+import { useStore } from "app/stores";
+import { observer } from "mobx-react";
+import { useFormikContext } from "formik";
+import Draggable from "react-draggable";
+import {
+  Dialog,
+  DialogTitle,
+  Icon,
+  IconButton,
+  DialogContent,
+  Grid,
+  DialogActions,
+  Button,
+} from "@material-ui/core";
+import Paper from "@material-ui/core/Paper";
+import { useTranslation } from "react-i18next";
+import DepartmentFilters from "app/views/Department/DepartmentFilters";
+import SelectDepartmentList from "./SelectDepartmentList";
+
+function PaperComponent(props) {
+  return (
+    <Draggable
+      handle="#draggable-dialog-title"
+      cancel={'[class*="MuiDialogContent-root"]'}
+    >
+      <Paper {...props} />
+    </Draggable>
+  );
+}
+
+export default observer(function SelectDepartmentPopup(props) {
+  const { setFieldValue, values } = useFormikContext();
+  const { t } = useTranslation();
+  const { open, setIsOpenDepartment } = props;
+
+
+  const [selectedDepartment, setSelectedDepartment] = useState(
+    values?.departments
+  );
+  const handleSelectDepartment = (_, department) => {
+    if (
+      selectedDepartment &&
+      selectedDepartment.id === department.id
+    ) {
+      setSelectedDepartment(null);
+    } else {
+      setSelectedDepartment(department);
+    }
+  };
+
+  useEffect(() => {
+    setFieldValue("department", selectedDepartment);
+  }, [setFieldValue, selectedDepartment]);
+
+  const handleConfirmSelectDepartment = () => {
+    setIsOpenDepartment(false);
+  };
+
+
+  return (
+    <Dialog
+      className="dialog-container"
+      open={open}
+      PaperComponent={PaperComponent}
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle
+        className="dialog-header bgc-primary"
+        style={{ cursor: "move" }}
+        id="draggable-dialog-title"
+      >
+        <span className="mb-20 text-white">{t("Lựa chọn đơn vị")}</span>
+      </DialogTitle>
+      <IconButton
+        style={{ position: "absolute", right: "10px", top: "10px" }}
+        onClick={() => setIsOpenDepartment(false)}
+      >
+        <Icon color="disabled" title={t("general.close")}>
+          close
+        </Icon>
+      </IconButton>
+      <DialogContent>
+        <Grid container className="mb-16">
+          <Grid item lg={6} md={6} sm={4} xs={4}></Grid>
+          <Grid item lg={6} md={6} sm={8} xs={8}>
+            <DepartmentFilters />
+          </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          <SelectDepartmentList
+            selectedItem={selectedDepartment}
+            handleSelectItem={handleSelectDepartment}
+          />
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          className="mb-16 mr-36 btn btn-secondary"
+          variant="contained"
+          onClick={() => setIsOpenDepartment(false)}
+        >
+          {t("general.button.cancel")}
+        </Button>
+        <Button
+          className="mb-16 mr-16 btn btn-primary"
+          variant="contained"
+          onClick={() => {
+            handleConfirmSelectDepartment();
+          }}
+        >
+          {t("general.button.select")}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+});

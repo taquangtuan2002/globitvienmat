@@ -1,0 +1,27 @@
+package com.globits.emr.domain;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import com.globits.core.domain.Person;
+@Entity
+@Table(name = "tbl_patient")
+public class Patient extends Person {
+	/*
+	 * Contain the list of property of the patient (but not person)
+	 * Which the doctor need to know (we will define it later) 
+	 * For example : The list of allergy
+	 */
+	
+	@Column(name="code")
+	private String code;//Patient Code
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+}

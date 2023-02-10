@@ -1,0 +1,44 @@
+package com.globits.emr.visit;
+
+public class IehVisitDto {
+    private SymptomDto symptom;
+    private AnamnesisDto anamnesis;
+    private VitalSignsDto vitalSign;
+    private PhysicalExaminationDto physicalExamination;
+
+    public IehVisitDto(){
+
+    }
+
+    public SymptomDto getSymptom() {
+        return symptom;
+    }
+
+    public void setSymptom(SymptomDto symptom) {
+        this.symptom = symptom;
+    }
+
+    public AnamnesisDto getAnamnesis() {
+        return anamnesis;
+    }
+
+    public void setAnamnesis(AnamnesisDto anamnesis) {
+        this.anamnesis = anamnesis;
+    }
+
+    public VitalSignsDto getVitalSign() {
+        return vitalSign;
+    }
+
+    public void setVitalSign(VitalSignsDto vitalSign) {
+        this.vitalSign = vitalSign;
+    }
+
+    public PhysicalExaminationDto getPhysicalExamination() {
+        return physicalExamination;
+    }
+
+    public void setPhysicalExamination(PhysicalExaminationDto physicalExamination) {
+        this.physicalExamination = physicalExamination;
+    }
+}

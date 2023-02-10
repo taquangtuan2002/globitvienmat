@@ -1,0 +1,29 @@
+package com.globits.emr.service;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+
+import com.globits.core.service.GenericService;
+import com.globits.emr.domain.Visit;
+import com.globits.emr.dto.VisitDto;
+import com.globits.emr.dto.search.SearchDto;
+
+public interface VisitService extends GenericService<Visit, UUID>{
+	VisitDto startVisit(UUID patientId);
+	
+	List<VisitDto> getAllDto();
+	
+	VisitDto getDtoById(UUID id);
+	
+	VisitDto saveOrUpdate(UUID id, VisitDto dto);
+	
+	Boolean deleteById(UUID id);
+	
+	void updateVoided(UUID id);
+	
+	Boolean deleteFakeVoided(UUID id);
+	
+	Page<VisitDto> searchByPage(SearchDto searchDto);
+}

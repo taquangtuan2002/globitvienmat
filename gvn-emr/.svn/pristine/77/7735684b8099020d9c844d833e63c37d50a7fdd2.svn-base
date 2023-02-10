@@ -1,0 +1,532 @@
+.text-center {
+  text-align: center !important;
+}
+.btn {
+  height: 36px;
+  display: inline-block !important;
+  font-weight: 400 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  border: 1px solid transparent !important;
+  padding: 6px 16px !important;
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+  // border-radius: 0.25rem!;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+    min-width: unset!important;
+}
+
+.btn-add {
+  color: #4c5b76 !important;
+  background-color: #eaecf0 !important;
+  border-color: #eaecf0 !important;
+}
+
+.btn-primary {
+  color: #fff !important;
+  background-color: #01c0c8 !important;
+  border-color: #01c0c8 !important;
+}
+
+.btn-primary-d {
+  color: #fff !important;
+  background-color: #2a80c8 !important;
+  border-color: #2a80c8 !important;
+}
+
+.btn-secondary {
+  color: #fff !important;
+  background-color: #fb9678 !important;
+  border-color: #fb9678 !important;
+}
+
+.btn-success {
+  color: #fff !important;
+  background-color: #3f923f !important;
+  border-color: #3f923f !important;
+}
+
+.btn-danger {
+  color: #fff !important;
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+}
+
+.btn-warning {
+  color: #fff !important;
+  background-color: #ffbe50 !important;
+  border-color: #ffbe50 !important;
+}
+
+.btn-info {
+  color: #fff!important;
+  background-color: #03a9f3!important;
+  border-color: #03a9f3!important;
+}
+
+.btn-light {
+  color: #212529 !important;
+  background-color: #f8f9fa !important;
+  border-color: #f8f9fa !important;
+}
+
+.btn-dark {
+  color: #fff !important;
+  background-color: #343a40 !important;
+  border-color: #343a40 !important;
+}
+
+.btn-danger:hover {
+  color: #fff !important;
+  background-color: #c82333 !important;
+  border-color: #bd2130 !important;
+}
+
+.btn-warning:hover {
+  color: #fff !important;
+  background-color: #e0a800 !important;
+  border-color: #d39e00 !important;
+}
+
+.btn-info:hover {
+  color: #fff !important;
+  background-color: #2187AB !important;
+  border-color: #2187AB !important;
+}
+
+.btn-primary:hover {
+  color: #fff !important;
+  background-color: #2086AA !important;
+  border-color: #2086AA !important;
+}
+
+.btn-primary-d:hover {
+  color: #fff !important;
+  background-color: #1f5f94;
+  border-color: #1f5f94;
+}
+
+.btn-secondary:hover {
+  color: #fff !important;
+  background-color: #E0876C !important;
+  border-color: #E0876C !important;
+}
+
+.btn-success:hover {
+  color: #fff !important;
+  background-color: #218838 !important;
+  border-color: #1e7e34 !important;
+}
+
+.btn-light:hover {
+  color: #212529 !important;
+  background-color: #e2e6ea !important;
+  border-color: #dae0e5 !important;
+}
+
+.btn-dark:hover {
+  color: #fff !important;
+  background-color: #23272b !important;
+  border-color: #1d2124 !important;
+}
+
+.d-inline-flex {
+  display: inline-flex !important;
+}
+.d-none {
+  display: none !important;
+}
+
+.MuiTypography-colorPrimary {
+  color: #01c0c8 !important;
+}
+
+.MuiTypography-colorSecondary {
+  color: #fb9678 !important;
+}
+
+.MuiIcon-colorSecondary {
+  color: #fb9678!important ;
+}
+
+.MuiIcon-colorPrimary {
+  color: #01c0c8 !important;
+}
+
+.text-primary-d2 {
+  color: #2564a9 !important;
+}
+.text-purple {
+  color: #ab8ce4!important;
+}
+
+.text-primary {
+  color: #01c0c8 !important;
+}
+
+.bgc-primary-d1 {
+  background-color: #2a80c8 !important;
+}
+
+.brc-primary-l2 {
+  border-color: #d2e6f6 !important;
+}
+
+.bgc-green-d1 {
+  background-color: #36ad82 !important;
+}
+.bgc-purple {
+  background-color: #ab8ce4!important;
+}
+
+.bgc-primary {
+  background-color: #01c0c8 !important;
+}
+
+.bgc-secondary {
+  background-color: #fb9678 !important;
+}
+
+.brc-green-l2 {
+  border-color: #d8f0e8 !important;
+}
+
+.bgc-success {
+  background-color: #00c292!important;
+}
+
+.bgc-warning-d1 {
+  background-color: #e19e2e !important;
+}
+
+.text-orange-l2 {
+  color: #ffc277 !important;
+}
+.brc-warning-l2 {
+  border-color: #fbeacd !important;
+}
+
+.bgc-danger-tp1 {
+  background-color: rgba(218, 78, 53, 0.925) !important;
+}
+
+.space-between {
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+.d-flex {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+.dialog-body {
+  background: #fff;
+  overflow: unset !important;
+  border-radius: 8px;
+}
+.dialog-form {
+  max-height: 80vh;
+  overflow: auto;
+}
+.paper-container {
+  // width: calc(100vw - 64px);
+  .MuiDialog-paper {
+    overflow: unset !important;
+  }
+}
+.paper-container.full-width {
+  width: calc(100vw - 64px);
+}
+.h40 {
+  height: 40px;
+}
+.h35 {
+  height: 35px;
+}
+.align-center {
+  align-items: center;
+}
+.MuiDialogContent-root {
+  overflow: unset !important;
+}
+.dialog-footer {
+  padding: 16px 24px !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.text-white {
+  color: #fff !important;
+}
+.text-danger {
+  color: #e46a76!important;
+}
+
+.text-secondary {
+  color: #fb9678!important
+}
+
+.text-success {
+  color: #00c292!important;
+}
+
+.MuiIcon-colorDisabled {
+  color: #fff !important;
+}
+.MuiIcon-colorError {
+  color: rgb(255, 87, 34) !important;
+}
+
+.MuiPickersToolbar-toolbar {
+  background-color: #2196f3 !important;
+}
+
+.MuiPickersDay-daySelected:hover {
+  background-color: #2a80c8 !important;
+}
+
+.MuiPickersDay-daySelected {
+  background-color: #01c0c8 !important;
+}
+
+.MuiButton-textPrimary {
+  color: #01c0c8 !important;
+}
+
+.input-description {
+  font-style: italic !important;
+  color: red !important;
+}
+
+.sidenav__user .username-photo img {
+  width: 80px !important;
+  height: 80px !important;
+  box-shadow: 0 2px 20px -5px #2196f3 !important;
+}
+
+.sidenav__user .username-photo .username {
+  font-weight: 600 !important;
+  color: #ffc277 !important;
+  font-size: 0.95em !important;
+}
+
+.highcharts-container {
+  /* border-radius: 8px!important; */
+  /* box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 10%); */
+  border-radius: 8px;
+  border-width: 0;
+  background-color: #fff;
+  position: relative;
+}
+
+.MuiPaginationItem-textPrimary.Mui-selected {
+  background-color: #01c0c8 !important;
+}
+
+.MuiPaginationItem-textPrimary.Mui-selected:hover {
+  background-color: #01c0c8 !important;
+}
+.input-popup-container {
+  position: relative !important;
+}
+
+.input-popup-container button {
+  min-width: 100px !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+}
+
+.content-index {
+  // height: 400px;
+  // padding: 10px 30px;
+  padding: 0 25px;
+  margin-bottom: 24px;
+  // background-size: 100% 400px;
+  // background-repeat: no-repeat;
+  // background-image: linear-gradient(
+  //   -45deg,
+  //   #2196f3 0%,
+  //   #2196f3 33%,
+  //   #00bfa5 100%
+  // );
+  // background-attachment: fixed;
+  // .index-breadcrumb {
+  //   margin-bottom: 30px;
+  // }
+  .index-card {
+    background-color: #ffffff;
+    .tab {
+      // background: #fff;
+      transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+      border-radius: 8px;
+      .tab-item {
+        // background: #fff !important;
+        border-radius: 8px !important;
+        .tab-container {
+          max-width: 100vw !important;
+        }
+      }
+    }
+  }
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.card-container {
+  background: #e4f5fc;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin-bottom: 14px !important;
+}
+
+.dialog-header {
+  border-bottom: 1px solid #e3f2fd !important;
+  text-transform: capitalize;
+}
+
+// .footer {
+//   z-index: 1 !important;
+//   margin-top: 24px;
+// }
+.MuiSvgIcon-colorPrimary {
+  color: #01c0c8!important;
+}
+.MuiSvgIcon-colorSecondary {
+  color: #fb9678!important;
+}
+.MuiButton-startIcon {
+  @media screen and (max-width: 767px) {
+    margin: 0 !important;
+  }
+}
+.side-menu-layout {
+  .index-breadcrumb {
+    margin-bottom: 0 !important;
+  }
+}
+
+.side-menu {
+  background: #fff;
+  border-radius: 8px;
+  .side-menu-item {
+    padding: 10px;
+  }
+}
+.list-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px !important;
+}
+
+.dropdown-container {
+  transition: all 0.2s linear;
+  background-color: #eaf0ff;
+  width: 100%;
+  border: 1px solid #3366ff;
+  padding: 6px;
+  border-radius: 20px;
+}
+.dropdown-container.disappear {
+  transition: all 0.2s linear;
+  background-color: #eaf0ff;
+  width: 100%;
+  border: none;
+  padding: 0px 6px;
+  margin: 0px 8px;
+  height: 0;
+  z-index: -1;
+  opacity: 0;
+}
+.dropdown-children > form {
+  width: 100% !important;
+}
+
+.side-menu-item .btn {
+  white-space: normal!important;
+  width: 100%;
+}
+
+.mega-menu-item {
+  text-align: center;
+    position: relative;
+  ul {
+    top:30px!important;
+    left:0px!important;
+    opacity: 1!important;
+    visibility: visible!important;
+  }
+}
+.mega-menu-sub-item {
+  text-align: left!important;
+}
+
+
+.form-title {
+  background-color: #2196f3;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  h4 {
+    color: #fff!important;
+    margin: 0!important;
+  }
+}
+.form-content {
+  padding-top:16px!important;
+  border: 1px solid #2196f3;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  margin-bottom: 24px!important;
+}
+.MuiCheckbox-colorPrimary.Mui-checked {
+  color: #01c0c8!important;
+}
+.table-divider {
+  td{
+    font-weight: bold;
+  }
+  
+}
+.fd-rr {
+  flex-direction: row-reverse;
+}
+
+.MuiTabScrollButton-root.Mui-disabled {
+  display: none;
+}
+
+.MuiTab-textColorPrimary.Mui-selected {
+  background: #fb9678;
+  color: #fff!important;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+.MuiTabs-root {
+  min-height: unset;
+}
+.MuiTab-root {
+  min-height: unset;
+}
+
+.profile-tab {
+  .MuiTab-textColorPrimary.Mui-selected {
+    background-color: #ffffff!important;
+    border-bottom: 2px solid #fb9678!important;
+    color: #fb9678!important;
+  }
+  .MuiTab-root {
+    padding: 15px 20px!important;
+    font-size: 14px!important;
+    font-weight: 300!important;
+    color: #212529!important;
+  }
+}

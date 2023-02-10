@@ -1,0 +1,906 @@
+package com.globits.emr.service.impl;
+
+import com.globits.core.dto.PersonDto;
+import com.globits.core.utils.CommonUtils;
+import com.globits.emr.domain.concept.ConceptDatatype;
+import com.globits.emr.dto.EncounterTypeDto;
+import com.globits.emr.dto.PersonAttributeTypeDto;
+import com.globits.emr.dto.VisitTypeDto;
+import com.globits.emr.dto.concept.ConceptAnswerDto;
+import com.globits.emr.dto.concept.ConceptDatatypeDto;
+import com.globits.emr.dto.concept.ConceptDto;
+import com.globits.emr.dto.concept.ConceptTypeDto;
+import com.globits.emr.service.*;
+import com.globits.emr.utils.ConceptUtil;
+import com.globits.security.domain.Role;
+import com.globits.security.dto.RoleDto;
+import com.globits.security.dto.UserDto;
+import com.globits.security.service.RoleService;
+import com.globits.security.service.UserService;
+
+import org.apache.catalina.filters.SetCharacterEncodingFilter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
+@Service
+public class SetupDataServiceImpl implements SetupDataService {
+
+	@Autowired
+	private RoleService roleService;
+
+	@Autowired
+	private UserService userService;
+
+	@Autowired
+	private ConceptDatatypeService conceptDatatypeService;
+	@Autowired
+	private ConceptTypeService conceptTypeService;
+	@Autowired
+	private ConceptService conceptService;
+	@Autowired
+	private VisitTypeService visitTypeService;
+	@Autowired
+	private EncounterTypeService encounterTypeService;
+
+	@Autowired
+	private PersonAttributeTypeService personAttributeTypeService;
+
+	@Override
+	public void setupEmrData() {
+		try {
+			createRoles();
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}
+		// create user
+		createAdminUser();
+
+		// create concept datatype
+		createConceptDataType();
+		// create concept type
+		createConceptType();
+		// create visit type
+		createVisitType();
+		// create encounttype
+		createEncounterType();
+		// create personAttributeType
+		createPersonAttributeType();
+		// create concept
+		createConcept();
+	}
+
+	private void createAdminUser() {
+		UserDto userDto = userService.findByUsername(com.globits.core.Constants.USER_ADMIN_USERNAME);
+		if (CommonUtils.isNotNull(userDto)) {
+			return;
+		}
+
+		userDto = new UserDto();
+		userDto.setUsername(com.globits.core.Constants.USER_ADMIN_USERNAME);
+		userDto.setPassword("admin");
+		userDto.setEmail("admin@globits.net");
+		userDto.setActive(true);
+		userDto.setDisplayName("Admin User");
+
+		Role role = roleService.findByName(com.globits.core.Constants.ROLE_ADMIN);
+
+		userDto.getRoles().addAll(Arrays.asList(new RoleDto(role)));
+
+		PersonDto person = new PersonDto();
+		person.setGender("M");
+		person.setFirstName("Admin");
+		person.setLastName("User");
+		person.setDisplayName("Admin User");
+
+		userDto.setPerson(person);
+
+		try {
+			userService.save(userDto);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	private void createRoleIfNotExist(String roleName) {
+
+		if (CommonUtils.isEmpty(roleName)) {
+			return;
+		}
+
+		Role role = roleService.findByName(roleName);
+
+		if (CommonUtils.isNotNull(role)) {
+			return;
+		}
+
+		if (role == null) {
+			role = new Role();
+			role.setName(roleName);
+		}
+
+		try {
+			roleService.save(role);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	private void createRoles() throws XMLStreamException {
+
+		List<String> roleNames = new ArrayList<>();
+
+		XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+		InputStream in = getClass().getClassLoader().getResourceAsStream("sys-roles.xml");
+		XMLStreamReader streamReader = inputFactory.createXMLStreamReader(in, "UTF-8");
+
+		streamReader.nextTag();
+		streamReader.nextTag();
+
+		while (streamReader.hasNext()) {
+			if (streamReader.isStartElement()) {
+				switch (streamReader.getLocalName()) {
+				case "name": {
+					roleNames.add(streamReader.getElementText());
+					break;
+				}
+				}
+			}
+			streamReader.next();
+		}
+
+		streamReader.close();
+
+		for (String roleName : roleNames) {
+			createRoleIfNotExist(roleName);
+		}
+	}
+
+	private void createConceptDataType() {
+		// Numeric
+		ConceptDatatypeDto conceptData1 = new ConceptDatatypeDto();
+		conceptData1.setName("numeric");
+		conceptData1.setCode("numeric");
+		conceptData1.setDescription("numeric");
+		if (!conceptDatatypeService.checkCode(null, conceptData1.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData1);
+		}
+		// coded
+		ConceptDatatypeDto conceptData2 = new ConceptDatatypeDto();
+		conceptData2.setName("coded");
+		conceptData2.setCode("coded");
+		conceptData2.setDescription("coded");
+		if (!conceptDatatypeService.checkCode(null, conceptData2.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData2);
+		}
+		// Date
+		ConceptDatatypeDto conceptData3 = new ConceptDatatypeDto();
+		conceptData3.setName("date");
+		conceptData3.setCode("date");
+		conceptData3.setDescription("date");
+		if (!conceptDatatypeService.checkCode(null, conceptData3.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData3);
+		}
+		// boolean
+		ConceptDatatypeDto conceptData4 = new ConceptDatatypeDto();
+		conceptData4.setName("boolean");
+		conceptData4.setCode("boolean");
+		conceptData4.setDescription("boolean");
+		if (!conceptDatatypeService.checkCode(null, conceptData4.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData4);
+		}
+		// Text
+		ConceptDatatypeDto conceptData5 = new ConceptDatatypeDto();
+		conceptData4.setName("text");
+		conceptData4.setCode("text");
+		conceptData4.setDescription("text");
+		if (!conceptDatatypeService.checkCode(null, conceptData4.getCode())) {
+			conceptDatatypeService.saveOrUpdate(null, conceptData4);
+		}
+
+	}
+
+	private void createConceptType() {
+		// labtest
+		ConceptTypeDto conceptType = new ConceptTypeDto();
+		conceptType.setName("Labtest");
+		conceptType.setCode("labtest");
+		conceptType.setDescription("Labtest");
+		if (!conceptTypeService.checkCode(null, conceptType.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType);
+		}
+		// diagnostic
+		ConceptTypeDto conceptType1 = new ConceptTypeDto();
+		conceptType1.setName("diagnostic");
+		conceptType1.setCode("diagnostic");
+		conceptType1.setDescription("diagnostic");
+		if (!conceptTypeService.checkCode(null, conceptType1.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType1);
+		}
+		// Symptom
+		ConceptTypeDto conceptType2 = new ConceptTypeDto();
+		conceptType2.setName("symptom");
+		conceptType2.setCode("symptom");
+		conceptType2.setDescription("symptom");
+		if (!conceptTypeService.checkCode(null, conceptType2.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType2);
+		}
+		// encounter
+		ConceptTypeDto conceptType3 = new ConceptTypeDto();
+		conceptType3.setName("encounter");
+		conceptType3.setCode("encounter");
+		conceptType3.setDescription("encounter");
+		if (!conceptTypeService.checkCode(null, conceptType3.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType3);
+		}
+		// misc
+		ConceptTypeDto conceptType4 = new ConceptTypeDto();
+		conceptType4.setName("misc");
+		conceptType4.setCode("misc");
+		conceptType4.setDescription("misc");
+		if (!conceptTypeService.checkCode(null, conceptType4.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType4);
+		}
+		// drug
+		ConceptTypeDto conceptType5 = new ConceptTypeDto();
+		conceptType5.setName("drug");
+		conceptType5.setCode("durg");
+		conceptType5.setDescription("durg");
+		if (!conceptTypeService.checkCode(null, conceptType5.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType5);
+		}
+		// Specimen
+		ConceptTypeDto conceptType6 = new ConceptTypeDto();
+		conceptType6.setName("specimen");
+		conceptType6.setCode("specimen");
+		conceptType6.setDescription("specimen");
+		if (!conceptTypeService.checkCode(null, conceptType6.getCode())) {
+			conceptTypeService.saveOrUpdate(null, conceptType6);
+		}
+	}
+
+	private void createVisitType() {
+		// Tái Khám
+		VisitTypeDto visitType = new VisitTypeDto();
+		visitType.setName("re-examination");
+		visitType.setCode("re-examination");
+		visitType.setDescription("re-examination");
+		if (!visitTypeService.checkCode(null, visitType.getCode())) {
+			visitTypeService.saveOrUpdate(visitType);
+		}
+		// khám lần đầu
+		VisitTypeDto visitType1 = new VisitTypeDto();
+		visitType1.setName("first_examination");
+		visitType1.setCode("first-examination");
+		visitType1.setDescription("first_examination");
+		if (!visitTypeService.checkCode(null, visitType1.getCode())) {
+			visitTypeService.saveOrUpdate(visitType1);
+		}
+		// khám từ xa
+		VisitTypeDto visitType2 = new VisitTypeDto();
+		visitType2.setName("remote_examination");
+		visitType2.setCode("remote_examination");
+		visitType2.setDescription("remote_examination");
+		if (!visitTypeService.checkCode(null, visitType2.getCode())) {
+			visitTypeService.saveOrUpdate(visitType2);
+		}
+	}
+
+	private void createPersonAttributeType() {
+		// BHYT
+		PersonAttributeTypeDto personAttributeTypeDto = new PersonAttributeTypeDto();
+		personAttributeTypeDto.setName("bhyt");
+		personAttributeTypeDto.setCode("bhyt");
+		personAttributeTypeDto.setDescription("bhyt");
+		if (!personAttributeTypeService.checkCode(null, personAttributeTypeDto.getCode())) {
+			personAttributeTypeService.saveOrUpdate(personAttributeTypeDto);
+		}
+		// registration code
+		PersonAttributeTypeDto personAttributeTypeDto1 = new PersonAttributeTypeDto();
+		personAttributeTypeDto.setName("registration_code");
+		personAttributeTypeDto.setCode("registration_code");
+		personAttributeTypeDto.setDescription("registration_code");
+		if (!personAttributeTypeService.checkCode(null, personAttributeTypeDto.getCode())) {
+			personAttributeTypeService.saveOrUpdate(personAttributeTypeDto);
+		}
+
+	}
+
+	private void createEncounterType() {
+		// thăm khám
+		EncounterTypeDto encounterTypeDto = new EncounterTypeDto();
+		encounterTypeDto.setName("visit");
+		encounterTypeDto.setCode("visit");
+		encounterTypeDto.setDescription("visit");
+		if (!encounterTypeService.checkCode(null, encounterTypeDto.getCode())) {
+			encounterTypeService.saveOrUpdate(encounterTypeDto);
+		}
+		// Chuyển phòng khám
+		EncounterTypeDto encounterTypeDto1 = new EncounterTypeDto();
+		encounterTypeDto1.setName("change_clinic");
+		encounterTypeDto1.setCode("change_clinic");
+		encounterTypeDto1.setDescription("change_clinic");
+		if (!encounterTypeService.checkCode(null, encounterTypeDto1.getCode())) {
+			encounterTypeService.saveOrUpdate(encounterTypeDto1);
+		}
+		// Đo thi lực
+		EncounterTypeDto encounterTypeDto2 = new EncounterTypeDto();
+		encounterTypeDto2.setName("visual_acuity_measurement");
+		encounterTypeDto2.setCode("visual_acuity_measurement");
+		encounterTypeDto2.setDescription("visual_acuity_measurement");
+		if (!encounterTypeService.checkCode(null, encounterTypeDto2.getCode())) {
+			encounterTypeService.saveOrUpdate(encounterTypeDto2);
+		}
+		// Đo khúc xạ
+		EncounterTypeDto encounterTypeDto3 = new EncounterTypeDto();
+		encounterTypeDto3.setName("vefraction_measurement");
+		encounterTypeDto3.setCode("Refraction_measurement");
+		encounterTypeDto3.setDescription("Refraction_measurement");
+		if (!encounterTypeService.checkCode(null, encounterTypeDto3.getCode())) {
+			encounterTypeService.saveOrUpdate(encounterTypeDto3);
+		}
+		// Đo kính
+		EncounterTypeDto encounterTypeDto4 = new EncounterTypeDto();
+		encounterTypeDto4.setName("Measuring_glasses");
+		encounterTypeDto4.setCode("Measuring_glasses");
+		encounterTypeDto4.setDescription("Measuring_glasses");
+		if (!encounterTypeService.checkCode(null, encounterTypeDto4.getCode())) {
+			encounterTypeService.saveOrUpdate(encounterTypeDto4);
+		}
+	}
+
+	private void createConcept() {
+		// trieu chung
+		ConceptDto concept1 = new ConceptDto();
+		concept1.setCode("symptom");
+		concept1.setName("Triệu chứng");
+		concept1.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1);
+		ConceptDto symptom = conceptService.getConceptByCode("symptom");
+		// cay mat
+		ConceptDto concept1_1 = new ConceptDto();
+		concept1_1.setCode("symptom11");
+		concept1_1.setName("Cay mắt");
+		concept1_1.setParent(symptom);
+		concept1_1
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1_1.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1_1);
+		// giam thi luc dot ngot
+		ConceptDto concept1_2 = new ConceptDto();
+		concept1_2.setCode("symptom12");
+		concept1_2.setName("Giảm thị lực đột ngột");
+		concept1_2.setParent(symptom);
+		concept1_2
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1_2.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1_2);
+		// nhin mo vao ban dem
+		ConceptDto concept1_3 = new ConceptDto();
+		concept1_3.setCode("symptom13");
+		concept1_3.setName("Nhìn mờ vào ban đêm");
+		concept1_3.setParent(symptom);
+		concept1_3
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1_3.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1_3);
+		// giam thi luc thuong qua
+		ConceptDto concept1_4 = new ConceptDto();
+		concept1_4.setCode("symptom14");
+		concept1_4.setName("Giảm thị lực thoáng qua");
+		concept1_4.setParent(symptom);
+		concept1_4
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1_4.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1_4);
+		// Nhìn thấy 2 hình
+		ConceptDto concept1_5 = new ConceptDto();
+		concept1_5.setCode("symptom15");
+		concept1_5.setName("Nhìn thấy 2 hình");
+		concept1_5.setParent(symptom);
+		concept1_5
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1_5.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1_5);
+		// Chảy nước mắt
+		ConceptDto concept1_6 = new ConceptDto();
+		concept1_6.setCode("symptom16");
+		concept1_6.setName("Chảy nước mắt");
+		concept1_6.setParent(symptom);
+		concept1_6
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1_6.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1_6);
+		// Giảm thị lực từ từ
+		ConceptDto concept1_7 = new ConceptDto();
+		concept1_7.setCode("symptom17");
+		concept1_7.setName("Giảm thị lực từ từ");
+		concept1_7.setParent(symptom);
+		concept1_7
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1_7.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1_7);
+		// Nhức đầu
+		ConceptDto concept1_8 = new ConceptDto();
+		concept1_8.setCode("symptom18");
+		concept1_8.setName("Nhưc đầu");
+		concept1_8.setParent(symptom);
+		concept1_8
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1_8.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1_8);
+		// Co giật mi
+		ConceptDto concept1_9 = new ConceptDto();
+		concept1_9.setCode("symptom19");
+		concept1_9.setName("Co giật mi");
+		concept1_9.setParent(symptom);
+		concept1_9
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept1_9.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept1_9);
+		// Mắt đổ ghèn
+		ConceptDto concept2_0 = new ConceptDto();
+		concept2_0.setCode("symptom20");
+		concept2_0.setName("Mắt đổ nghèn");
+		concept2_0.setParent(symptom);
+		concept2_0
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_0.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_0);
+		// Nôn , buồn nôn
+		ConceptDto concept2_1 = new ConceptDto();
+		concept2_1.setCode("symptom21");
+		concept2_1.setName("Nôn, buồn nôn");
+		concept2_1.setParent(symptom);
+		concept2_1
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_1.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_1);
+		// cộm xồm
+		ConceptDto concept2_2 = new ConceptDto();
+		concept2_2.setCode("symptom22");
+		concept2_2.setName("Cộm xồm");
+		concept2_2.setParent(symptom);
+		concept2_2
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_2.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_2);
+		// Mắt nhắm ko kín
+		ConceptDto concept2_3 = new ConceptDto();
+		concept2_3.setCode("symptom23");
+		concept2_3.setName("Mắt nhắm ko kín");
+		concept2_3.setParent(symptom);
+		concept2_3
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_3.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_3);
+		// Sợ ánh sáng
+		ConceptDto concept2_4 = new ConceptDto();
+		concept2_4.setCode("symptom24");
+		concept2_4.setName("Sợ ánh sáng");
+		concept2_4.setParent(symptom);
+		concept2_4
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_4.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_4);
+		// DỊ vật chấn thương
+		ConceptDto concept2_5 = new ConceptDto();
+		concept2_5.setCode("symptom25");
+		concept2_5.setName("Dị vật , chấn thương");
+		concept2_5.setParent(symptom);
+		concept2_5
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_5.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_5);
+		// Mờ mắt
+		ConceptDto concept2_6 = new ConceptDto();
+		concept2_6.setCode("symptom26");
+		concept2_6.setName("Mờ mắt");
+		concept2_6.setParent(symptom);
+		concept2_6
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_6.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_6);
+		// Sưng mi mắt
+		ConceptDto concept2_7 = new ConceptDto();
+		concept2_7.setCode("symptom27");
+		concept2_7.setName("Sưng mi mắt");
+		concept2_7.setParent(symptom);
+		concept2_7
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_7.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_7);
+		// Đau nhức mắt nhẹ
+		ConceptDto concept2_8 = new ConceptDto();
+		concept2_8.setCode("symptom28");
+		concept2_8.setName("Đau nhức măt nhẹ");
+		concept2_8.setParent(symptom);
+		concept2_8
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_8.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_8);
+		// Mờ mắt khi nhìn gần
+		ConceptDto concept2_9 = new ConceptDto();
+		concept2_9.setCode("symptom29");
+		concept2_9.setName("Mờ mắt khi nhìn gần");
+		concept2_9.setParent(symptom);
+		concept2_9
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept2_9.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept2_9);
+		// Sụp mí
+		ConceptDto concept3_0 = new ConceptDto();
+		concept3_0.setCode("symptom30");
+		concept3_0.setName("Sụp mí");
+		concept3_0.setParent(symptom);
+		concept3_0
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept3_0.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept3_0);
+		// Đau nhức mắt nhiều
+		ConceptDto concept3_1 = new ConceptDto();
+		concept3_1.setCode("symptom31");
+		concept3_1.setName("Đau nhức mắt nhiều");
+		concept3_1.setParent(symptom);
+		concept3_1
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept3_1.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept3_1);
+		// Mờ mắt khi nhìn xa
+		ConceptDto concept3_2 = new ConceptDto();
+		concept3_2.setCode("symptom32");
+		concept3_2.setName("Mờ mắt khi nhìn xa");
+		concept3_2.setParent(symptom);
+		concept3_2
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept3_2.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept3_2);
+		// Thấy lóa sáng
+		ConceptDto concept3_3 = new ConceptDto();
+		concept3_3.setCode("symptom33");
+		concept3_3.setName("Thấy lóa sáng ");
+		concept3_3.setParent(symptom);
+		concept3_3
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept3_3.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept3_3);
+		// Đau nhức mắt vừa
+		ConceptDto concept3_4 = new ConceptDto();
+		concept3_4.setCode("symptom34");
+		concept3_4.setName("Đau nhức mắt vừa");
+		concept3_4.setParent(symptom);
+		concept3_4
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept3_4.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept3_4);
+		// Mỏi mắt
+		ConceptDto concept3_5 = new ConceptDto();
+		concept3_5.setCode("symptom35");
+		concept3_5.setName("Mỏi mắt");
+		concept3_5.setParent(symptom);
+		concept3_5
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept3_5.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept3_5);
+		// Thấy quầng tan sắc
+		ConceptDto concept3_6 = new ConceptDto();
+		concept3_6.setCode("symptom36");
+		concept3_6.setName("Thấy quầng tan sắc");
+		concept3_6.setParent(symptom);
+		concept3_6
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept3_6.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept3_6);
+		// Đỏ mắt
+		ConceptDto concept3_7 = new ConceptDto();
+		concept3_7.setCode("symptom37");
+		concept3_7.setName("Đỏ mắt");
+		concept3_7.setParent(symptom);
+		concept3_7
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept3_7.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept3_7);
+		// Ngứa mắt
+		ConceptDto concept3_8 = new ConceptDto();
+		concept3_8.setCode("symptom38");
+		concept3_8.setName("Ngứa mắt ");
+		concept3_8.setParent(symptom);
+		concept3_8
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		concept3_8.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, concept3_8);
+
+		// kham thuc the
+		this.createPhysicalExaminationConcept();
+	}
+
+	private void createPhysicalExaminationConcept() {
+		// create parent kham thuc the
+		ConceptDto concept1 = new ConceptDto();
+		setConceptParent("pe-0000", "Khám thực thể", concept1);
+		ConceptDto physicalExamination = conceptService.getConceptByCode("pe-0000");
+		// create chill
+		// le bo
+		this.createLeboConcept(physicalExamination);
+		// mi mat
+		this.createMiMatConcept(physicalExamination);
+	}
+
+	public void createLeboConcept(ConceptDto parent) {
+		// create parent le bo
+		ConceptDto concept1 = new ConceptDto();
+		setConceptChill("pe-000001", "Lệ bộ", parent, concept1);
+		ConceptDto LeBo = conceptService.getConceptByCode("pe-000001");
+		// create chill
+		this.createNhoGianDongTuLeBoConcept(LeBo);
+		this.createBinhThuongLeBoConcept(LeBo);
+		this.createLeQuanLeBoConcept(LeBo);
+		this.createTuyenLeConcept(LeBo);
+		this.createLeDaoConcept(LeBo);
+		this.createGhichuLeBoConcept(LeBo);
+	}
+	public void createGhichuLeBoConcept(ConceptDto parent) {
+		// create concept question
+		ConceptDto concept1_2 = new ConceptDto();
+		setConceptQuestion("pe-00000501", "Ghichu", parent, concept1_2);
+		// create concept answer
+		// Binh thuong
+		ConceptAnswerDto conceptanswer1 = new ConceptAnswerDto();
+		ConceptDto answer1 = new ConceptDto();
+		setConceptAnswer("pe-0000050101", "Ghi chú mắt ", answer1, conceptanswer1, concept1_2);
+		// save
+		conceptService.saveOrUpdate(null, concept1_2);
+	}
+	public void createLeDaoConcept(ConceptDto parent) {
+		// create concept question
+		ConceptDto concept1_1 = new ConceptDto();
+		setConceptQuestion("pe-00000401", "Lệ Đạo", parent, concept1_1);
+		// create concept answer
+		// Bơm lệ quản nước thoát không tốt mắt phải
+		ConceptAnswerDto conceptanswer1 = new ConceptAnswerDto();
+		ConceptDto answer1 = new ConceptDto();
+		setConceptAnswer("pe-0000040101","Viêm lệ đạo mắt phải", answer1, conceptanswer1,
+				concept1_1);
+		// Trào lệ quản đối diện mắt phải
+		ConceptAnswerDto conceptanswer2 = new ConceptAnswerDto();
+		ConceptDto answer2 = new ConceptDto();
+		setConceptAnswer("pe-0000040102", "Hẹp lệ đạo mắt phải", answer2, conceptanswer2, concept1_1);
+		// Trào lệ quản tại chỗ mắt phải
+		ConceptAnswerDto conceptanswer3 = new ConceptAnswerDto();
+		ConceptDto answer3 = new ConceptDto();
+		setConceptAnswer("pe-0000040103", "Chảy nước mắt sống phải", answer3, conceptanswer3, concept1_1);
+		// Bơm lệ quản nước thoát không tốt mắt trái
+		ConceptAnswerDto conceptanswer4 = new ConceptAnswerDto();
+		ConceptDto answer4 = new ConceptDto();
+		setConceptAnswer("pe-0000040104", "Viêm lệ đạo mắt trái", answer4, conceptanswer4,
+				concept1_1);
+		// Trào lệ quản đối diện mắt trái
+		ConceptAnswerDto conceptanswer5 = new ConceptAnswerDto();
+		ConceptDto answer5 = new ConceptDto();
+		setConceptAnswer("pe-0000040102", "Hẹp lệ đạo mắt trái", answer5, conceptanswer5, concept1_1);
+		// Trào lệ quản tại chỗ mắt trái
+		ConceptAnswerDto conceptanswer6 = new ConceptAnswerDto();
+		ConceptDto answer6 = new ConceptDto();
+		setConceptAnswer("pe-0000040103", "Chảy nước mắt sống trái", answer6, conceptanswer6, concept1_1);
+		// save
+		conceptService.saveOrUpdate(null, concept1_1);
+	}
+	
+	public void createTuyenLeConcept(ConceptDto parent) {
+		// create concept question
+		ConceptDto concept1_1 = new ConceptDto();
+		setConceptQuestion("pe-00000301", "Tuyến lệ", parent, concept1_1);
+		// create concept answer
+		// Mat trai
+		ConceptAnswerDto conceptanswer1 = new ConceptAnswerDto();
+		ConceptDto answer1 = new ConceptDto();
+		setConceptAnswer("pe-0000030101", "Viêm tuyến lệ mắt  trái", answer1, conceptanswer1, concept1_1);
+		// Mat phai
+		ConceptAnswerDto conceptanswer2 = new ConceptAnswerDto();
+		ConceptDto answer2 = new ConceptDto();
+		setConceptAnswer("pe-0000030102", "Viêm tuyến lệ mắt phải", answer2, conceptanswer2, concept1_1);
+		// save
+		conceptService.saveOrUpdate(null, concept1_1);
+	}
+
+	public void createLeQuanLeBoConcept(ConceptDto parent) {
+		// create concept question
+		ConceptDto concept1_1 = new ConceptDto();
+		setConceptQuestion("pe-00000201", "Lệ Quản", parent, concept1_1);
+		// create concept answer
+		// Bơm lệ quản nước thoát không tốt mắt phải
+		ConceptAnswerDto conceptanswer1 = new ConceptAnswerDto();
+		ConceptDto answer1 = new ConceptDto();
+		setConceptAnswer("pe-0000020101", "Bơm lệ quản nước thoát không tốt mắt phải ", answer1, conceptanswer1,
+				concept1_1);
+		// Trào lệ quản đối diện mắt phải
+		ConceptAnswerDto conceptanswer2 = new ConceptAnswerDto();
+		ConceptDto answer2 = new ConceptDto();
+		setConceptAnswer("pe-0000020102", "Trào lệ quản đối diện mắt phải", answer2, conceptanswer2, concept1_1);
+		// Trào lệ quản tại chỗ mắt phải
+		ConceptAnswerDto conceptanswer3 = new ConceptAnswerDto();
+		ConceptDto answer3 = new ConceptDto();
+		setConceptAnswer("pe-0000020103", "Trào lệ quản tại chỗ mắt phải", answer3, conceptanswer3, concept1_1);
+		// Bơm lệ quản nước thoát không tốt mắt trái
+		ConceptAnswerDto conceptanswer4 = new ConceptAnswerDto();
+		ConceptDto answer4 = new ConceptDto();
+		setConceptAnswer("pe-0000020104", "Bơm lệ quản nước thoát không tốt mắt trái", answer4, conceptanswer4,
+				concept1_1);
+		// Trào lệ quản đối diện mắt trái
+		ConceptAnswerDto conceptanswer5 = new ConceptAnswerDto();
+		ConceptDto answer5 = new ConceptDto();
+		setConceptAnswer("pe-0000020102", "Trào lệ quản đối diện mắt trái", answer5, conceptanswer5, concept1_1);
+		// Trào lệ quản tại chỗ mắt trái
+		ConceptAnswerDto conceptanswer6 = new ConceptAnswerDto();
+		ConceptDto answer6 = new ConceptDto();
+		setConceptAnswer("pe-0000020103", "Trào lệ quản tại chỗ mắt trái", answer6, conceptanswer6, concept1_1);
+		// save
+		conceptService.saveOrUpdate(null, concept1_1);
+	}
+	
+
+	public void createNhoGianDongTuLeBoConcept(ConceptDto parent) {
+		// create concept question
+		ConceptDto concept1_1 = new ConceptDto();
+		setConceptQuestion("pe-00000101", "Nhỏ giãn đồng tử", parent, concept1_1);
+		// create concept answer
+		// Mat trai
+		ConceptAnswerDto conceptanswer1 = new ConceptAnswerDto();
+		ConceptDto answer1 = new ConceptDto();
+		setConceptAnswer("pe-0000010101", "Mắt trái", answer1, conceptanswer1, concept1_1);
+		// Mat phai
+		ConceptAnswerDto conceptanswer2 = new ConceptAnswerDto();
+		ConceptDto answer2 = new ConceptDto();
+		setConceptAnswer("pe-0000010102", "Mắt phải", answer2, conceptanswer2, concept1_1);
+		// save
+		conceptService.saveOrUpdate(null, concept1_1);
+	}
+
+	public void createBinhThuongLeBoConcept(ConceptDto parent) {
+		// create concept question
+		ConceptDto concept1_2 = new ConceptDto();
+		setConceptQuestion("pe-00000102", "Bình thường", parent, concept1_2);
+		// create concept answer
+		// Binh thuong
+		ConceptAnswerDto conceptanswer1 = new ConceptAnswerDto();
+		ConceptDto answer1 = new ConceptDto();
+		setConceptAnswer("pe-0000010201", "Bình thường", answer1, conceptanswer1, concept1_2);
+		// save
+		conceptService.saveOrUpdate(null, concept1_2);
+	}
+	
+
+	public void createMiMatConcept(ConceptDto parent) {
+		// create parent mi mat
+		ConceptDto concept1 = new ConceptDto();
+		setConceptChill("pe-000002", "Mi mắt", parent, concept1);
+		ConceptDto MiMat = conceptService.getConceptByCode("pe-000002");
+		// create chill
+		this.createNhoGianDongTuMiMatConcept(MiMat);
+		this.createBinhThuongMiMatConcept(MiMat);
+		this.createBatThuongBoMiMiMatConcept(MiMat);
+	}
+
+	public void createNhoGianDongTuMiMatConcept(ConceptDto parent) {
+		// create concept question
+		ConceptDto concept1_1 = new ConceptDto();
+		setConceptQuestion("pe-00000201", "Nhỏ giãn đồng tử", parent, concept1_1);
+		// create concept answer
+		// Mat trai
+		ConceptAnswerDto conceptanswer1 = new ConceptAnswerDto();
+		ConceptDto answer1 = new ConceptDto();
+		setConceptAnswer("pe-0000020101", "Mắt trái", answer1, conceptanswer1, concept1_1);
+		// Mat phai
+		ConceptAnswerDto conceptanswer2 = new ConceptAnswerDto();
+		ConceptDto answer2 = new ConceptDto();
+		setConceptAnswer("pe-0000020102", "Mắt phải", answer2, conceptanswer2, concept1_1);
+		// save
+		conceptService.saveOrUpdate(null, concept1_1);
+	}
+
+	public void createBinhThuongMiMatConcept(ConceptDto parent) {
+		// create concept question
+		ConceptDto concept1_2 = new ConceptDto();
+		setConceptQuestion("pe-00000202", "Bình thường", parent, concept1_2);
+		// create concept answer
+		// Binh thuong
+		ConceptAnswerDto conceptanswer1 = new ConceptAnswerDto();
+		ConceptDto answer1 = new ConceptDto();
+		setConceptAnswer("pe-0000020201", "Bình thường", answer1, conceptanswer1, concept1_2);
+		// save
+		conceptService.saveOrUpdate(null, concept1_2);
+	}
+
+	public void createBatThuongBoMiMiMatConcept(ConceptDto parent) {
+		// create concept question
+		ConceptDto concept1_3 = new ConceptDto();
+		setConceptQuestion("pe-00000203", "Bất thường bờ mi", parent, concept1_3);
+		// create concept answer
+		// phu
+		ConceptAnswerDto conceptanswer1 = new ConceptAnswerDto();
+		ConceptDto answer1 = new ConceptDto();
+		setConceptAnswer("pe-0000020301", "Phù", answer1, conceptanswer1, concept1_3);
+		// seo da mi
+		ConceptAnswerDto conceptanswer2 = new ConceptAnswerDto();
+		ConceptDto answer2 = new ConceptDto();
+		setConceptAnswer("pe-0000020302", "Sẹo da mi", answer2, conceptanswer2, concept1_3);
+		// sung ne
+		ConceptAnswerDto conceptanswer3 = new ConceptAnswerDto();
+		ConceptDto answer3 = new ConceptDto();
+		setConceptAnswer("pe-0000020303", "Sưng nề", answer3, conceptanswer3, concept1_3);
+		// sup mi
+		ConceptAnswerDto conceptanswer4 = new ConceptAnswerDto();
+		ConceptDto answer4 = new ConceptDto();
+		setConceptAnswer("pe-0000020304", "Sụp mi", answer4, conceptanswer4, concept1_3);
+		// khuyet mi
+		ConceptAnswerDto conceptanswer5 = new ConceptAnswerDto();
+		ConceptDto answer5 = new ConceptDto();
+		setConceptAnswer("pe-0000020305", "Khuyết mi", answer5, conceptanswer5, concept1_3);
+		// ho mi
+		ConceptAnswerDto conceptanswer6 = new ConceptAnswerDto();
+		ConceptDto answer6 = new ConceptDto();
+		setConceptAnswer("pe-0000020306", "Hở mi", answer6, conceptanswer6, concept1_3);
+		// lat mi
+		ConceptAnswerDto conceptanswer7 = new ConceptAnswerDto();
+		ConceptDto answer7 = new ConceptDto();
+		setConceptAnswer("pe-0000020307", "Lật mi", answer7, conceptanswer7, concept1_3);
+		// tre mi
+		ConceptAnswerDto conceptanswer8 = new ConceptAnswerDto();
+		ConceptDto answer8 = new ConceptDto();
+		setConceptAnswer("pe-0000020308", "Trễ mi", answer8, conceptanswer8, concept1_3);
+
+		// save
+		conceptService.saveOrUpdate(null, concept1_3);
+	}
+
+	public void setConceptParent(String code, String name, ConceptDto conceptParent) {
+		conceptParent.setCode(code);
+		conceptParent.setName(name);
+		conceptParent
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		conceptParent.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, conceptParent);
+	}
+
+	public void setConceptChill(String code, String name, ConceptDto conceptParent, ConceptDto conceptChill) {
+		conceptChill.setCode(code);
+		conceptChill.setName(name);
+		conceptChill.setParent(conceptParent);
+		conceptChill
+				.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		conceptChill.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptService.saveOrUpdate(null, conceptChill);
+	}
+
+	public void setConceptQuestion(String code, String name, ConceptDto conceptParent, ConceptDto conceptQuestion) {
+		conceptQuestion.setCode(code);
+		conceptQuestion.setName(name);
+		conceptQuestion.setParent(conceptParent);
+		conceptQuestion.setConceptDataType(
+				conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_CODED));
+		conceptQuestion.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		conceptQuestion.setConceptAnswersDto(new HashSet<>());
+	}
+
+	public void setConceptAnswer(String code, String name, ConceptDto answer, ConceptAnswerDto conceptAnswer,
+			ConceptDto conceptQuestion) {
+		answer.setCode(code);
+		answer.setName(name);
+		answer.setConceptDataType(conceptDatatypeService.getConceptDatatypeByCode(ConceptUtil.CONCEPT_DATATYPE_TEXT));
+		answer.setConceptType(conceptTypeService.getConceptTypeByCode(ConceptUtil.CONCEPT_TYPE_ENCOUNTER));
+		answer = conceptService.saveOrUpdate(null, answer);
+		conceptAnswer.setAnswerConcept(answer);
+		conceptAnswer.setConcept(conceptQuestion);
+		conceptQuestion.getConceptAnswersDto().add(conceptAnswer);
+	}
+
+}

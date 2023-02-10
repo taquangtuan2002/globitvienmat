@@ -1,0 +1,72 @@
+package com.globits.emr.rest;
+
+import com.globits.emr.EmrConstants;
+import com.globits.emr.domain.Observation;
+import com.globits.emr.dto.ObservationDto;
+import com.globits.emr.dto.search.SearchDto;
+import com.globits.emr.service.ObservationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/observation")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+public class RestObservationController {
+    @Autowired
+    private ObservationService observationService;
+
+    @Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/get-all-dto", method = RequestMethod.GET)
+    public ResponseEntity<List<ObservationDto>> getAllDto() {
+        List<Observation> result = observationService.getAll();
+        List<ObservationDto>lstObservationDtos=new ArrayList<ObservationDto>();
+        for (Observation observation : result) {
+			ObservationDto dto=new ObservationDto(observation);
+			lstObservationDtos.add(dto);
+		}
+        return new ResponseEntity<>(lstObservationDtos, HttpStatus.OK);
+    }
+
+    @Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/save/{id}", method = RequestMethod.POST)
+    public ResponseEntity<ObservationDto> saveObservation(@RequestBody ObservationDto dto,@PathVariable UUID id) {
+        ObservationDto result = new ObservationDto( observationService.saveOrUpdate(dto,id));
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Boolean> deleteById(@PathVariable("id") UUID id) {
+        Boolean result = observationService.deleteById(id);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public ResponseEntity<ObservationDto> getDtoById(@PathVariable("id") UUID id) {
+        ObservationDto result =new ObservationDto( observationService.getDtoById(id));
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/delete-fake/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Boolean> deleteFake(@PathVariable("id") UUID id) {
+        Boolean result = observationService.deleteFakeVoided(id);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/search-by-page", method = RequestMethod.POST)
+    public ResponseEntity<Page<ObservationDto>> searchByPage(@RequestBody SearchDto searchDto) {
+        Page<ObservationDto> result = observationService.searchByPage(searchDto);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+}

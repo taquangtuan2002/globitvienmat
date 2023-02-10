@@ -1,0 +1,73 @@
+package com.globits.emr.dto;
+
+import java.util.Date;
+
+import com.globits.core.dto.BaseObjectDto;
+import com.globits.emr.domain.Encounter;
+
+public class EncounterDto extends BaseObjectDto {
+	private Date encounterDatetime;
+	private PatientDto patient;
+	private EncounterTypeDto encounterType;
+//	private VisitDto visit;
+
+	public EncounterDto() {
+
+	}
+
+	public EncounterDto(Encounter entity) {
+		if(entity != null) {
+			this.id = entity.getId();
+			this.encounterDatetime = entity.getEncounterDatetime();
+			if(entity.getPatient() != null) {
+				this.patient = new PatientDto(entity.getPatient());
+			}
+			if(entity.getEncounterType() != null) {
+				this.encounterType = new EncounterTypeDto(entity.getEncounterType());
+			}
+			// visit
+		}
+	}
+
+	public EncounterDto(Encounter entity, boolean arc) {
+		if(entity != null) {
+			this.id = entity.getId();
+			this.encounterDatetime = entity.getEncounterDatetime();
+			// patient
+			if(entity.getPatient() != null) {
+				this.patient = new PatientDto(entity.getPatient());
+			}
+			if(entity.getEncounterType() != null) {
+				this.encounterType = new EncounterTypeDto(entity.getEncounterType());
+			}
+			// visit
+		}
+	}
+
+	public Date getEncounterDatetime() {
+		return encounterDatetime;
+	}
+
+	public void setEncounterDatetime(Date encounterDatetime) {
+		this.encounterDatetime = encounterDatetime;
+	}
+	
+
+	public PatientDto getPatient() {
+		return patient;
+	}
+
+	public void setPatient(PatientDto patient) {
+		this.patient = patient;
+	}
+
+	public EncounterTypeDto getEncounterType() {
+		return encounterType;
+	}
+
+	public void setEncounterType(EncounterTypeDto encounterType) {
+		this.encounterType = encounterType;
+	}
+	
+	
+}

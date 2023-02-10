@@ -1,0 +1,28 @@
+package com.globits.emr.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.globits.emr.domain.concept.ConceptNumeric;
+import com.globits.emr.dto.concept.ConceptNumericsDto;
+
+@Repository
+public interface ConceptNumericRepository extends JpaRepository<ConceptNumeric, UUID>{
+//	@Query("select count(entity.id) from ConceptNumeric entity where entity.code =?1 and (entity.id <> ?2 or ?2 is null) ")
+//    Long checkCode(String code, UUID id);
+
+    @Query("select new com.globits.emr.dto.concept.ConceptNumericsDto(ct) from ConceptNumeric ct")
+    Page<ConceptNumericsDto> getListPage(Pageable pageable);
+
+//    @Query("select entity from ConceptNumeric entity where entity.name =?1")
+//    List<ConceptNumeric> findByName(String name);
+
+//    @Query("select new com.globits.emr.dto.concept.ConceptNumericsDto(entity) from ConceptNumeric entity where entity.code =?1")
+//    ConceptNumericDto findByCode(String code);
+}

@@ -1,0 +1,26 @@
+package com.globits.emr.service;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import com.globits.core.service.GenericService;
+import com.globits.emr.domain.Patient;
+import com.globits.emr.dto.PatientDto;
+import com.globits.emr.dto.search.SearchDto;
+
+public interface PatientService extends GenericService<Patient, UUID>{
+	    PatientDto saveOrUpdate(UUID id, PatientDto dto);
+
+	    Boolean deleteById(UUID id);
+
+	    PatientDto getPatient(UUID id);
+
+	    Page<PatientDto> searchByPage(SearchDto dto);
+
+	    Boolean checkCode(UUID id, String code);
+
+		void updateVoided(UUID id);
+
+		Boolean deleteFakeVoided(UUID id);
+
+}

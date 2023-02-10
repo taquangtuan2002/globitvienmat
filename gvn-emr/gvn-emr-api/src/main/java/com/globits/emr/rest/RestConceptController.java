@@ -1,0 +1,93 @@
+package com.globits.emr.rest;
+
+import java.util.UUID;
+
+import com.globits.emr.domain.concept.Concept;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.globits.emr.EmrConstants;
+import com.globits.emr.dto.concept.ConceptDto;
+import com.globits.emr.dto.search.SearchDto;
+import com.globits.emr.service.ConceptService;
+
+@RestController
+@RequestMapping("/api/concept")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+public class RestConceptController {
+	@Autowired
+	ConceptService conceptService;
+
+    @Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public ConceptDto getConceptById(@PathVariable("id") UUID id) {
+        Concept concept = conceptService.getConceptById(id);
+        return new ConceptDto(concept);
+    }
+
+    @Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/get-by-code/{code}", method = RequestMethod.GET)
+    public ResponseEntity<ConceptDto> getConceptByCode(@PathVariable("code") String code) {
+        Concept result = conceptService.getConceptByCode(code);
+        return new ResponseEntity<>(new ConceptDto(result), HttpStatus.OK);
+    }
+	
+	@Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    public ConceptDto save(@RequestBody Concept concept) {
+    	Concept result = conceptService.saveConcept(null, concept);
+        return new ConceptDto(result);
+    }
+
+    @Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<ConceptDto> update(@PathVariable("id") UUID id, @RequestBody Concept concept) {
+    	Concept result = conceptService.saveConcept(id, concept);
+        ConceptDto dto = new ConceptDto(result);
+        return new ResponseEntity<>(dto, HttpStatus.OK);
+    }
+
+	@Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Boolean> delete(@PathVariable("id") UUID id) {
+        Boolean result = conceptService.deleteById(id);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+	@Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/search-by-page", method = RequestMethod.POST)
+    public ResponseEntity<Page<ConceptDto>> searchByPage(@RequestBody SearchDto searchDto) {
+        Page<ConceptDto> page = this.conceptService.searchByPage(searchDto);
+        return new ResponseEntity<>(page, HttpStatus.OK);
+    }
+
+	@Secured({EmrConstants.ROLE_ADMIN})
+    @RequestMapping(value = "/check-code", method = RequestMethod.GET)
+    public ResponseEntity<Boolean> checkCode(@RequestParam(value = "id", required = false) UUID id,
+                                             @RequestParam("code") String code) {
+        Boolean result = conceptService.checkCode(id, code);
+        return new ResponseEntity<>(result, (result != null) ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
+	@Secured({EmrConstants.ROLE_ADMIN})
+	@RequestMapping(value = "/delete-fake/{id}", method = RequestMethod.GET)
+	public ResponseEntity<Boolean> deleteFakeVoided(@PathVariable("id") UUID id) {
+		Boolean result = conceptService.deleteFakeVoided(id);
+		if(result == null) {
+			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+
+}

@@ -1,0 +1,82 @@
+package com.globits.emr.dto;
+
+import java.util.Date;
+import java.util.Set;
+
+import com.globits.core.dto.BaseObjectDto;
+import com.globits.emr.domain.Encounter;
+import com.globits.emr.domain.Visit;
+import com.globits.emr.dto.concept.ConceptDto;
+
+public class VisitDto extends BaseObjectDto {
+	private Date startDatetime;
+	private Date stopDatetime;
+	private PatientDto patient;
+	private VisitTypeDto visitType;
+	private ConceptDto concept;
+//	private SpecialistDto specialist; 
+	private Set<Encounter> encounters;
+
+	public VisitDto() {
+
+	}
+
+	public VisitDto(Visit entity) {
+
+	}
+
+	public VisitDto(Visit entity, boolean arc) {
+
+	}
+
+	public Date getStartDatetime() {
+		return startDatetime;
+	}
+
+	public void setStartDatetime(Date startDatetime) {
+		this.startDatetime = startDatetime;
+	}
+
+	public Date getStopDatetime() {
+		return stopDatetime;
+	}
+
+	public void setStopDatetime(Date stopDatetime) {
+		this.stopDatetime = stopDatetime;
+	}
+
+	public PatientDto getPatient() {
+		return patient;
+	}
+
+	public void setPatient(PatientDto patient) {
+		this.patient = patient;
+	}
+
+	public VisitTypeDto getVisitType() {
+		return visitType;
+	}
+
+	public void setVisitType(VisitTypeDto visitType) {
+		this.visitType = visitType;
+	}
+
+	public ConceptDto getConcept() {
+		return concept;
+	}
+
+	public void setConcept(ConceptDto concept) {
+		this.concept = concept;
+	}
+
+	public Set<Encounter> getEncounters() {
+		return encounters;
+	}
+
+	public void setEncounters(Set<Encounter> encounters) {
+		this.encounters = encounters;
+	}
+	
+	
+
+}

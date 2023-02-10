@@ -1,0 +1,203 @@
+import React from "react";
+import {
+  Button,
+  IconButton,
+  Icon,
+  makeStyles,
+  TableCell,
+  Table,
+  TableRow,
+  TableBody,
+  TableHead,
+} from "@material-ui/core";
+import { useFormikContext, FieldArray } from "formik";
+import GlobitsTextField from "app/common/form/GlobitsTextField";
+import GlobitsDateTimePicker from "app/common/form/GlobitsDateTimePicker";
+import { useTranslation } from "react-i18next";
+import AddIcon from "@material-ui/icons/Add";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    background: "#E4f5fc",
+    padding: "10px 15px",
+    borderRadius: "5px",
+  },
+  groupContainer: {
+    width: "100%",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "0!important",
+    },
+  },
+  tableContainer: {
+    marginTop: "16px",
+    overflowX: "auto",
+    overflowY: "auto",
+    "& .MuiTableCell-body": {
+      border: "1px solid #e9ecef",
+      padding: 0,
+      textAlign: "center",
+    },
+    "& .MuiTableCell-head": {
+      padding: "10px",
+      minWidth: "150px",
+      border: "1px solid #e9ecef",
+      textAlign: "center",
+    },
+  },
+  tableHeader: {
+    width: "100%",
+    borderBottom: "1px solid #E3F2FD",
+    marginBottom: "8px",
+    "& th": {
+      width: "calc(100vw / 4)",
+    },
+  },
+}));
+
+function Row(props) {
+  const { index, arrayHelpers } = props;
+  const { values, setFieldValue } = useFormikContext();
+
+  return (
+    <TableRow key={index}>
+      <TableCell colSpan={1}>
+        <GlobitsDateTimePicker
+          name={`stafInsuranceHistory[${index}].startDate`}
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsDateTimePicker
+          name={`stafInsuranceHistory[${index}].endDate`}
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField
+          name={`stafInsuranceHistory[${index}].salaryCofficient`}
+          type="number"
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField
+          name={`stafInsuranceHistory[${index}].insuranceSalary`}
+          type="number"
+        />
+      </TableCell>
+      <TableCell>
+        <GlobitsTextField
+          name={`stafInsuranceHistory[${index}].staffPercentage`}
+          type="number"
+        />
+      </TableCell>
+      <TableCell>
+        <GlobitsTextField
+          name={`stafInsuranceHistory[${index}].orgPercentage`}
+          type="number"
+        />
+      </TableCell>
+      <TableCell>
+        <GlobitsTextField
+          name={`stafInsuranceHistory[${index}].staffInsuranceAmount`}
+          type="number"
+        />
+      </TableCell>
+      <TableCell>
+        <GlobitsTextField
+          name={`stafInsuranceHistory[${index}].orgInsuranceAmount`}
+          type="number"
+        />
+      </TableCell>
+      <TableCell>
+        <GlobitsTextField name={`stafInsuranceHistory[${index}].note`} />
+      </TableCell>
+      <TableCell>
+        <IconButton size="small" onClick={() => arrayHelpers.remove(index)}>
+          <Icon fontSize="small" color="secondary">
+            delete
+          </Icon>
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export default function StaffInsuranceHistoryImpl() {
+  const { t } = useTranslation();
+  const classes = useStyles();
+  const { values } = useFormikContext();
+  return (
+    <FieldArray
+      name="stafInsuranceHistory"
+      render={(arrayHelpers) => (
+        <div className={classes.groupContainer}>
+          <Button
+            className="btn btn-primary d-inline-flex"
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() =>
+              arrayHelpers.push({
+                startDate: null,
+                endDate: null,
+                note: "",
+                salaryCofficient: null,
+                insuranceSalary: null,
+                staffPercentage: null,
+                orgPercentage: null,
+                staffInsuranceAmount: null,
+                orgInsuranceAmount: null,
+              })
+            }
+          >
+            {t("general.button.add")}
+          </Button>
+          <div className={classes.tableContainer}>
+            {values?.stafInsuranceHistory?.length > 0 ? (
+              <Table style={{ tableLayout: "auto" }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.startDate")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.endDate")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.salaryCofficient")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.insuranceSalary")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.staffPercentage")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.orgPercentage")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.staffInsuranceAmount")}
+                    </TableCell>
+                    <TableCell>
+                      {t("humanResourcesInformation.orgInsuranceAmount")}
+                    </TableCell>
+                    <TableCell>{t("humanResourcesInformation.note")}</TableCell>
+                    <TableCell style={{ minWidth: "70px" }}>
+                      {t("general.action")}
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {values?.stafInsuranceHistory?.map((detail, index) => (
+                    <Row index={index} arrayHelpers={arrayHelpers} />
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <h5 className="text-primary n-w">
+                Không có quá trình đóng BHXH nào
+              </h5>
+            )}
+          </div>
+        </div>
+      )}
+    />
+  );
+}

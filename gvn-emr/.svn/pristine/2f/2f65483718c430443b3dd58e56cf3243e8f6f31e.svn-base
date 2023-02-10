@@ -1,0 +1,6 @@
+package com.globits.emr.utils;
+
+public class ConceptUtil {
+    public static final String CONCEPT_DATATYPE_NUMERIC = "numeric";
+    public static final String CONCEPT_DATATYPE_CODED = "coded";
+}

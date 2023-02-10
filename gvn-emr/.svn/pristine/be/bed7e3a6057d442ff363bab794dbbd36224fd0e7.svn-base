@@ -1,0 +1,20 @@
+package com.globits.emr.utils;
+
+public class ConceptUtil {
+    public static final String CONCEPT_DATATYPE_NUMERIC = "numeric";
+    public static final String CONCEPT_DATATYPE_CODED = "coded";
+
+    public static final String CONCEPT_DATATYPE_TEXT = "text";
+    public static final String CONCEPT_DATATYPE_DATE = "date";
+    public static final String CONCEPT_DATATYPE_BOOLEAN = "boolean";
+
+  
+    public static final String CONCEPT_TYPE_LABTEST = "labtest";
+    public static final String CONCEPT_TYPE_DIAGNOSTIC = "diagnostic";
+    public static final String CONCEPT_TYPE_SYMPTOM = "symptom";
+    public static final String CONCEPT_TYPE_ENCOUNTER = "encounter";
+    public static final String CONCEPT_TYPE_MISC = "misc";
+    public static final String CONCEPT_TYPE_DRUG = "drug";
+    public static final String CONCEPT_TYPE_SPECIMEN = "specimen";
+    
+}

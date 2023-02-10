@@ -1,0 +1,174 @@
+import React from "react";
+import {
+  Grid,
+  Button,
+  IconButton,
+  Icon,
+  makeStyles,
+  TableCell,
+  Table,
+  TableRow,
+  TableBody,
+  TableHead,
+} from "@material-ui/core";
+import { useFormikContext, FieldArray } from "formik";
+import GlobitsDateTimePicker from "app/common/form/GlobitsDateTimePicker";
+import GlobitsPagingAutocomplete from "app/common/form/GlobitsPagingAutocomplete";
+import GlobitsCheckBox from "app/common/form/GlobitsCheckBox";
+import { pagingPosition } from "../../PositionTitle/PositionTitleService";
+import { pagingAllDepartments } from "../../Department/DepartmentService";
+import { useTranslation } from "react-i18next";
+import AddIcon from "@material-ui/icons/Add";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    background: "#E4f5fc",
+    padding: "10px 15px",
+    borderRadius: "5px",
+  },
+  groupContainer: {
+    width: "100%",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "0!important",
+    },
+  },
+  tableContainer: {
+    marginTop: "16px",
+    // overflowX: "auto",
+    // overflowY: "hidden",
+    "& .MuiTableCell-body": {
+      border: "1px solid #e9ecef",
+      padding: 0,
+    },
+    "& .MuiTableCell-head": {
+      minWidth: "150px",
+      padding: "10px",
+      border: "1px solid #e9ecef",
+      textAlign: "center",
+    },
+  },
+  tableHeader: {
+    width: "100%",
+    borderBottom: "1px solid #E3F2FD",
+    marginBottom: "8px",
+    "& th": {
+      width: "calc(100vw / 4)",
+    },
+  },
+}));
+
+function Row(props) {
+  const { index, arrayHelpers } = props;
+  const { values, setFieldValue } = useFormikContext();
+
+  return (
+    <TableRow key={index}>
+      <TableCell colSpan={1}>
+        <GlobitsPagingAutocomplete
+          name={`positions[${index}].position`}
+          api={pagingPosition}
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsPagingAutocomplete
+          name={`positions[${index}].department`}
+          api={pagingAllDepartments}
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsDateTimePicker name={`positions[${index}].fromDate`} />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsDateTimePicker name={`positions[${index}].toDate`} />
+      </TableCell>
+      <TableCell>
+        <GlobitsCheckBox
+          name={`positions[${index}].current`}
+          style={{ margin: "auto" }}
+        />
+      </TableCell>
+      <TableCell>
+        <GlobitsCheckBox
+          name={`positions[${index}].mainPosition`}
+          style={{ margin: "auto" }}
+        />
+      </TableCell>
+      <TableCell style={{ textAlign: "center" }}>
+        <IconButton size="small" onClick={() => arrayHelpers.remove(index)}>
+          <Icon fontSize="small" color="secondary">
+            delete
+          </Icon>
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export default function PersonCertificate() {
+  const { t } = useTranslation();
+  const classes = useStyles();
+  const { values } = useFormikContext();
+
+  return (
+    <FieldArray
+      name="positions"
+      render={(arrayHelpers) => (
+        <div className={classes.groupContainer}>
+          <Button
+            className="btn btn-primary d-inline-flex"
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() =>
+              arrayHelpers.push({
+                position: null,
+                department: null,
+                fromDate: null,
+                toDate: null,
+                current: false,
+                mainPosition: false,
+              })
+            }
+          >
+            {t("general.Add.positions")}
+          </Button>
+          <div className={classes.tableContainer}>
+            <Table style={{ tableLayout: "auto" }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell colSpan={1}>
+                    {t("humanResourcesInformation.positionName")}
+                  </TableCell>
+                  <TableCell colSpan={1}>{t("department.name")}</TableCell>
+                  <TableCell colSpan={1}>
+                    {t("humanResourcesInformation.fromDate")}
+                  </TableCell>
+                  <TableCell colSpan={1}>
+                    {t("humanResourcesInformation.toDate")}
+                  </TableCell>
+                  <TableCell style={{ minWidth: "100px" }}>
+                    {t("humanResourcesInformation.currentPosition")}
+                  </TableCell>
+                  <TableCell style={{ minWidth: "100px" }}>
+                    {t("humanResourcesInformation.mainPosition")}
+                  </TableCell>
+                  {/* <TableCell colSpan={1}>
+                    {t("certificate.issueDate")}
+                  </TableCell> */}
+                  <TableCell style={{ minWidth: "70px" }}>
+                    {t("humanResourcesInformation.manipulation")}
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {values?.positions?.map((detail, index) => (
+                  <Row index={index} arrayHelpers={arrayHelpers} />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+    />
+    // </>
+  );
+}

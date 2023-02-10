@@ -1,0 +1,110 @@
+import React, { useEffect, useState } from "react";
+import { useStore } from "../../../stores";
+import { observer } from "mobx-react";
+import Draggable from "react-draggable";
+import {
+  Dialog,
+  DialogTitle,
+  Icon,
+  IconButton,
+  DialogContent,
+  Grid,
+  DialogActions,
+  Button,
+} from "@material-ui/core";
+import Paper from "@material-ui/core/Paper";
+import { useTranslation } from "react-i18next";
+import PositionTitleFilters from "../../PositionTitle/PositionTitleFilters";
+import SelectPositionTitleList from "./SelectPositionTitleList";
+
+function PaperComponent(props) {
+  return (
+    <Draggable
+      handle="#draggable-dialog-title"
+      cancel={'[class*="MuiDialogContent-root"]'}
+    >
+      <Paper {...props} />
+    </Draggable>
+  );
+}
+
+export default observer(function SelectPositionTitlePopup(props) {
+  const { t } = useTranslation();
+  const { positionTitleStore } = useStore();
+  const { open } = props;
+  const [selectedPositionList, setselectedPositionList] = useState();
+  const { handleTogglePositionTitlePopup, positionTitleList, updatePageData } =
+    positionTitleStore;
+
+    useEffect(() => {
+      updatePageData();
+    }, [updatePageData]);
+
+  // const handleConfirmSelectPositionTitle = () => {
+  //   handleClose();
+  // };
+  const handleSelectListPosition = (position) => {
+    // debugger;
+    setselectedPositionList(position);
+  };
+
+  return (
+    <Dialog
+      className="dialog-container"
+      open={open}
+      PaperComponent={PaperComponent}
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle
+        className="dialog-header bgc-primary"
+        style={{ cursor: "move" }}
+        id="draggable-dialog-title"
+      >
+        <span className="mb-20 text-white">{t("department.select")}</span>
+        <IconButton
+          style={{ position: "absolute", right: "10px", top: "10px" }}
+          onClick={() => handleTogglePositionTitlePopup()}
+        >
+          <Icon color="disabled" title={t("general.close")}>
+            close
+          </Icon>
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        <Grid container className="mb-16">
+          <Grid item md={6}></Grid>
+          <Grid item lg={4} md={4} sm={12} xs={12}>
+            <PositionTitleFilters />
+          </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          <SelectPositionTitleList
+            handleSelectListPosition={handleSelectListPosition}
+          />
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          className="mb-16 mr-36 btn btn-secondary"
+          variant="contained"
+          onClick={() => handleTogglePositionTitlePopup()}
+        >
+          {t("general.button.cancel")}
+        </Button>
+        <Button
+          className="mb-16 mr-16 btn btn-primary"
+          variant="contained"
+          // onClick={() => {
+          //   handleConfirmSelectPositionTitle();
+          // }}
+          onClick={() =>
+            props.handleSelectMultiplePosition(selectedPositionList)
+          }
+        >
+          {t("general.button.select")}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+});

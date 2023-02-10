@@ -1,0 +1,31 @@
+package com.globits.emr.visit;
+
+import com.globits.emr.dto.ObservationDto;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ObservationGroupDto {
+    private Integer conceptId;//concept cua trieu chung mat
+    private List<ObservationDto> items;
+
+    public ObservationGroupDto(){
+
+    }
+
+    public Integer getConceptId() {
+        return conceptId;
+    }
+
+    public void setConceptId(Integer conceptId) {
+        this.conceptId = conceptId;
+    }
+
+    public List<ObservationDto> getItems() {
+        return items;
+    }
+
+    public void setItems(List<ObservationDto> items) {
+        this.items = items;
+    }
+}

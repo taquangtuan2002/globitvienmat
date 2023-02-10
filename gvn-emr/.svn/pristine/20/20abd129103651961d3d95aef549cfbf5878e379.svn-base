@@ -1,0 +1,239 @@
+package com.globits.emr.service.impl;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.joda.time.LocalDateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import com.globits.core.domain.Country;
+import com.globits.core.domain.Person;
+import com.globits.core.dto.CountryDto;
+import com.globits.core.repository.CountryRepository;
+import com.globits.core.repository.PersonRepository;
+import com.globits.core.service.PersonService;
+import com.globits.core.service.impl.GenericServiceImpl;
+import com.globits.emr.domain.Patient;
+import com.globits.emr.dto.PatientDto;
+import com.globits.emr.dto.search.SearchDto;
+import com.globits.emr.repository.PatientRepository;
+import com.globits.emr.service.PatientService;
+
+
+@Service
+@Transactional
+public class PatientServiceImpl extends GenericServiceImpl<Patient, UUID> implements PatientService{
+	@PersistenceContext
+    EntityManager manager;
+	@Autowired 
+	PatientRepository repos;
+	@Autowired 
+	CountryRepository countryRepos;
+	@Autowired
+	PersonService personService;
+	
+
+	@Override
+	public PatientDto saveOrUpdate(UUID id, PatientDto dto) {
+		if (dto != null && dto.getCode() != null && StringUtils.hasText(dto.getCode())) {
+			Patient entity = null;
+            if (dto.getId() != null) {
+                if (dto.getId() != null && !dto.getId().equals(id)) {
+                    return null;
+                }
+                Optional<Patient> PatientOptional = repos.findById(id);
+                if (PatientOptional.isPresent()) {
+                    entity = PatientOptional.get();
+                }
+                if (entity != null)
+                    entity.setModifyDate(LocalDateTime.now());
+            }
+            if (entity == null) {
+                entity = new Patient();
+                entity.setCreateDate(LocalDateTime.now());
+                entity.setModifyDate(LocalDateTime.now());
+            }
+            entity.setCode(dto.getCode());
+            if(dto.getFirstName()!=null) {
+            	entity.setFirstName(dto.getFirstName());
+            }
+            if(dto.getVoided()!=null) {
+            	entity.setVoided(dto.getVoided());
+            }
+            if(dto.getLastName()!=null) {
+            	entity.setLastName(dto.getLastName());
+            }
+            if(dto.getFirstName()!=null&&dto.getLastName()!=null) {
+            	entity.setDisplayName(dto.getLastName()+" "+dto.getFirstName());
+            }
+            if(dto.getBirthDate()!=null) {
+            	entity.setBirthDate(dto.getBirthDate());
+            }
+            if(dto.getBirthPlace()!=null) {
+            	entity.setBirthPlace(dto.getBirthPlace());
+            }
+            if(dto.getGender()!=null) {
+            	entity.setGender(dto.getGender());
+            }
+            if(dto.getEmail()!=null) {
+            	entity.setEmail(dto.getEmail());
+            }
+            if(dto.getPhoneNumber()!=null) {
+            	entity.setPhoneNumber(dto.getPhoneNumber());
+            }
+            if(dto.getCarrer()!=null) {
+            	entity.setCarrer(dto.getCarrer());
+            }
+            if (dto.getNationality() != null && dto.getNationality().getId() != null) {
+                Optional<Country> optionalCountry = countryRepos.findById(dto.getNationality().getId());
+                if (optionalCountry.isPresent()) {
+                	Country ct = optionalCountry.get();
+                	entity.setNationality(ct);
+                }
+            }
+            personService.save(entity);
+            entity = repos.save(entity);
+            return new PatientDto(entity);
+        }
+        return null;
+	}
+
+	@Override
+	public Boolean deleteById(UUID id) {
+		if (id != null) {
+			Patient entity = null;
+			Optional<Patient> patientOptional = repos.findById(id);
+            if (patientOptional.isPresent()) {
+            	entity = patientOptional.get();
+            }
+            if (entity != null) {
+            repos.deleteById(id);
+            return true;}
+        }
+        return false;
+	}
+	@Override
+	public void updateVoided(UUID id) {
+		if(id != null) {
+			Authentication authencation = SecurityContextHolder.getContext().getAuthentication();
+			String currentUsername = "Unknown User";
+			if(authencation != null) {
+				currentUsername = authencation.getName();
+			}
+			Patient entity = null;
+			Optional<Patient> patientOptional = repos.findById(id);
+			if(patientOptional.isPresent()) {
+				entity = patientOptional.get();
+			}
+			if(entity != null) {
+				entity.setModifyDate(LocalDateTime.now());
+				entity.setModifiedBy(currentUsername);
+			}
+			entity.setVoided(true);
+		}
+		
+	}
+	
+	@Override
+	public Boolean deleteFakeVoided(UUID id) {
+		if(id != null) {
+			Patient entity = null;
+			Optional<Patient> patientOptional = repos.findById(id);
+			if(patientOptional.isPresent()) {
+				entity = patientOptional.get();
+			}
+			if(entity != null) {
+				this.updateVoided(id);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public PatientDto getPatient(UUID id) {
+		Patient entity = null;
+        Optional<Patient> patientOptional = repos.findById(id);
+        if (patientOptional.isPresent()) {
+            entity = patientOptional.get();
+        }
+        if (entity != null) {
+            return new PatientDto(entity);
+        }
+        return null;
+	}
+
+	@Override
+	public Page<PatientDto> searchByPage(SearchDto dto) {
+		if (dto == null) {
+            return null;
+        }
+
+        int pageIndex = dto.getPageIndex();
+        int pageSize = dto.getPageSize();
+
+        if (pageIndex > 0) {
+            pageIndex--;
+        } else {
+            pageIndex = 0;
+        }
+
+        String whereClause = "";
+
+        String orderBy = " ORDER BY entity.createDate DESC";
+
+        String sqlCount = "select count(entity.id) from Patient as entity where (1=1)   ";
+        String sql = "select new com.globits.emr.dto.Patient.PatientDto(entity) from Patient as entity where (1=1)  ";
+
+        if (dto.getKeyword() != null && StringUtils.hasText(dto.getKeyword())) {
+            whereClause += " AND ( entity.code LIKE :text )";
+        }
+
+        sql += whereClause + orderBy;
+        sqlCount += whereClause;
+
+        Query q = manager.createQuery(sql, PatientDto.class);
+        Query qCount = manager.createQuery(sqlCount);
+
+        if (dto.getKeyword() != null && StringUtils.hasText(dto.getKeyword())) {
+            q.setParameter("text", '%' + dto.getKeyword() + '%');
+            qCount.setParameter("text", '%' + dto.getKeyword() + '%');
+        }
+        int startPosition = pageIndex * pageSize;
+        q.setFirstResult(startPosition);
+        q.setMaxResults(pageSize);
+        List<PatientDto> entities = q.getResultList();
+        long count = (long) qCount.getSingleResult();
+
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        return new PageImpl<>(entities, pageable, count);
+	}
+
+	@Override
+	public Boolean checkCode(UUID id, String code) {
+		if (StringUtils.hasText(code)) {
+            Long count = repos.checkCode(code, id);
+            return count != 0L;
+        }
+        return null;
+	}
+
+
+
+}

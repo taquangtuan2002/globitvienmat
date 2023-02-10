@@ -1,0 +1,69 @@
+package com.globits.emr.service.impl;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+
+import com.globits.core.service.impl.GenericServiceImpl;
+import com.globits.emr.domain.Visit;
+import com.globits.emr.dto.VisitDto;
+import com.globits.emr.dto.search.SearchDto;
+import com.globits.emr.repository.VisitRepository;
+import com.globits.emr.service.VisitService;
+
+@Service
+public class VisitServiceImpl extends GenericServiceImpl<Visit, UUID> implements VisitService{
+	@Autowired
+	private VisitRepository visitRepos;
+
+	@Override
+	public VisitDto startVisit(UUID patientId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<VisitDto> getAllDto() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public VisitDto getDtoById(UUID id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public VisitDto saveOrUpdate(UUID id, VisitDto dto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Boolean deleteById(UUID id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void updateVoided(UUID id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Boolean deleteFakeVoided(UUID id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Page<VisitDto> searchByPage(SearchDto searchDto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+}

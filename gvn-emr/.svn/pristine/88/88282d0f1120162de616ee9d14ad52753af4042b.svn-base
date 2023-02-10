@@ -1,0 +1,377 @@
+import React, { useState, useEffect } from "react";
+import { Formik, Form, ErrorMessage } from "formik";
+import {
+  Grid,
+  DialogActions,
+  Button,
+  DialogContent,
+  FormControl,
+  makeStyles,
+} from "@material-ui/core";
+import SaveIcon from "@material-ui/icons/Save";
+import BlockIcon from "@material-ui/icons/Block";
+import { useTranslation } from "react-i18next";
+import { useStore } from "../../stores";
+import * as Yup from "yup";
+import GlobitsAsyncAutocomplete from "../../common/form/GlobitsAsyncAutocomplete";
+import GlobitsTextField from "../../common/form/GlobitsTextField";
+import { getAllRoles } from "./UserService";
+import ChangePassWordAccordion from "./ChangePassWordAccordion";
+import GlobitsSelectInput from "../../common/form/GlobitsSelectInput";
+import LocalConstants from "../../LocalConstants";
+//note
+import IconButton from "@material-ui/core/IconButton";
+import InputLabel from "@material-ui/core/InputLabel";
+import Visibility from "@material-ui/icons/Visibility";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import Input from "@material-ui/core/Input";
+import "./UserStyle.scss";
+import { displayName } from "qrcode.react";
+
+export default function UserForm() {
+  const useStyles = makeStyles({
+    position: "relative",
+    inputClass: {
+      border: "1px solid #ccc",
+      fontSize: "15px",
+      height: "37.63px",
+      padding: "10.5px 14px",
+      position: "absolute",
+      width: "100%",
+      borderRadius: "5px",
+      right: "0",
+      transition: "all 0.3s ease-in-out",
+    },
+    inputClassError: {
+      border: "1px solid #f44336",
+      fontSize: "15px",
+      height: "37.63px",
+      padding: "10.5px 14px",
+      position: "absolute",
+      width: "100%",
+      borderRadius: "5px",
+      right: "0",
+      transition: "all 0.3s ease-in-out",
+    },
+  });
+  const classes = useStyles();
+
+  const { userStore } = useStore();
+  const { t } = useTranslation();
+  const { handleClose, selectedUser, saveUser, updateUser } = userStore;
+
+  const [user, setUser] = useState({
+    id: "",
+    displayName: "",
+    gender: "",
+    email: "",
+    username: "",
+    roles: [],
+    password: "",
+    confirmPassword: "",
+    person: {
+      gender: "",
+      displayName: "",
+    },
+    active: true,
+  });
+  const [showPass, setShowPass] = React.useState({
+    showPassword: false,
+    showconfirmPassword: false,
+  });
+
+  const handleClickShowPassword = () => {
+    setShowPass({ ...showPass, showPassword: !showPass.showPassword });
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+  const handleClickShowconfirmPassword = () => {
+    setShowPass({
+      ...showPass,
+      showconfirmPassword: !showPass.showconfirmPassword,
+    });
+  };
+
+  const handleMouseDownconfirmPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const validationSchema = Yup.object({
+    person: Yup.object().shape({
+      displayName: Yup.string().required(t("validation.required")).nullable(),
+    }),
+    username: Yup.string().required(t("validation.required")).nullable(),
+    roles: Yup.array().required(t("validation.required")),
+    password: Yup.string().required(t("validation.required")).nullable(),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password"), null], t("validation.confirm_password"))
+      .required(t("validation.required"))
+      .nullable(),
+  });
+
+  useEffect(() => {
+    if (selectedUser) {
+      let newUser = {
+        ...selectedUser,
+        password: "",
+        confirmPassword: "",
+      };
+      setUser(newUser);
+    }
+  }, [selectedUser]);
+
+  function hanledFormSubmit(user) {
+    if (user != null) {
+      if (user.id) {
+        updateUser(user);
+      } else {
+        saveUser(user);
+      }
+    }
+  }
+
+  return (
+    <Formik
+      validationSchema={validationSchema}
+      enableReinitialize
+      initialValues={user}
+      onSubmit={(values, actions) => {
+        hanledFormSubmit(values);
+        actions.setSubmitting(false);
+      }}
+    >
+      {({ setFieldValue, values, isSubmitting, errors, touched }) => (
+        <Form autoComplete="off">
+          <div className="dialog-body">
+            <DialogContent className="o-hidden">
+              <Grid container spacing={2}>
+                <Grid item sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={
+                      <span>
+                        <span style={{ color: "red" }}> * </span>
+                        {t("user.displayName")}
+                      </span>
+                    }
+                    name="person.displayName"
+                  />
+                </Grid>
+                <Grid item sm={6} xs={12}>
+                  <GlobitsSelectInput
+                    label={t("user.gender")}
+                    name="person.gender"
+                    keyValue="id"
+                    options={LocalConstants.ListGender}
+                  />
+                </Grid>
+                <Grid item sm={6} xs={12}>
+                  <GlobitsTextField
+                    label={
+                      <span>
+                        <span style={{ color: "red" }}> * </span>
+                        {t("user.username")}
+                      </span>
+                    }
+                    name="username"
+                  />
+                </Grid>
+                <Grid item sm={6} xs={12}>
+                  <GlobitsTextField
+                    type="email"
+                    label={t("user.email")}
+                    name="email"
+                  />
+                </Grid>
+                <Grid item sm={12} xs={12}>
+                  <GlobitsAsyncAutocomplete
+                    label={
+                      <span>
+                        <span style={{ color: "red" }}> * </span>
+                        {t("user.role.title")}
+                      </span>
+                    }
+                    name="roles"
+                    multiple
+                    api={getAllRoles}
+                  />
+                </Grid>
+
+                {selectedUser?.id && (
+                  <ChangePassWordAccordion setFieldValue={setFieldValue} />
+                )}
+
+                {!selectedUser?.id && (
+                  <>
+                    <Grid item sm={6} xs={12}>
+                      <InputLabel
+                        style={{ marginBottom: "4px", marginTop: "3px" }}
+                        htmlFor="password"
+                      >
+                        <span style={{ color: "black" }}>
+                          <span style={{ color: "red" }}> * </span>
+                          {t("user.password")}
+                        </span>
+                      </InputLabel>
+                      <FormControl fullWidth>
+                        <Input
+                          type={showPass.showPassword ? "text" : "password"}
+                          onChange={(value) => {
+                            setUser({
+                              ...user,
+                              email: values?.email,
+                              username: values?.username,
+                              confirmPassword: values?.confirmPassword,
+                              person: values?.person,
+                              roles: values?.roles,
+                              password: value.target.value,
+                            });
+                          }}
+                          value={user.password}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={handleClickShowPassword}
+                                onMouseDown={handleMouseDownPassword}
+                              >
+                                {showPass.showPassword ? (
+                                  <Visibility
+                                    fontSize="small"
+                                    color="primary"
+                                  />
+                                ) : (
+                                  <VisibilityOff
+                                    fontSize="small"
+                                    color="primary"
+                                  />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          }
+                          className={
+                            errors.password && touched.password
+                              ? classes.inputClassError
+                              : classes.inputClass
+                          }
+                          name="password"
+                        />
+                      </FormControl>
+                      <ErrorMessage
+                        name="password"
+                        component="div"
+                        className="invalid-feedback"
+                        style={{
+                          color: "#f44336",
+                          padding: "20px 0 0 14px",
+                          fontSize: "0.75rem",
+                          spacing: "0.03333em;",
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item sm={6} xs={12}>
+                      <InputLabel
+                        style={{ marginBottom: "4px", marginTop: "3px" }}
+                        htmlFor="password"
+                      >
+                        <span style={{ color: "black" }}>
+                          <span style={{ color: "red" }}> * </span>
+                          {t("user.rePassword")}
+                        </span>
+                      </InputLabel>
+                      <FormControl fullWidth>
+                        <Input
+                          type={
+                            showPass.showconfirmPassword ? "text" : "password"
+                          }
+                          onChange={(value) => {
+                            setUser({
+                              ...user,
+                              confirmPassword: value.target.value,
+                              email: values?.email,
+                              username: values?.username,
+                              person: values?.person,
+                              roles: values?.roles,
+                              password: values?.password,
+                            });
+                          }}
+                          value={user.confirmPassword}
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={handleClickShowconfirmPassword}
+                                onMouseDown={handleMouseDownconfirmPassword}
+                              >
+                                {showPass.showconfirmPassword ? (
+                                  <Visibility
+                                    fontSize="small"
+                                    color="primary"
+                                  />
+                                ) : (
+                                  <VisibilityOff
+                                    fontSize="small"
+                                    color="primary"
+                                  />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          }
+                          className={
+                            errors.confirmPassword && touched.confirmPassword
+                              ? classes.inputClassError
+                              : classes.inputClass
+                          }
+                          name="confirmPassword"
+                        />
+                      </FormControl>
+                      <ErrorMessage
+                        name="confirmPassword"
+                        component="div"
+                        className="invalid-feedback"
+                        style={{
+                          color: "#f44336",
+                          padding: "20px 0 0 14px",
+                          fontSize: "0.75rem",
+                          spacing: "0.03333em;",
+                        }}
+                      />
+                    </Grid>
+                    <div></div>
+                    <br />
+                  </>
+                )}
+              </Grid>
+            </DialogContent>
+          </div>
+          <div className="dialog-footer">
+            <DialogActions className="p-0">
+              <div className="flex flex-space-between flex-middle">
+                <Button
+                  startIcon={<BlockIcon />}
+                  variant="contained"
+                  className="mr-12 btn btn-secondary d-inline-flex"
+                  color="secondary"
+                  onClick={() => handleClose()}
+                >
+                  {t("general.button.cancel")}
+                </Button>
+                <Button
+                  startIcon={<SaveIcon />}
+                  className="mr-0 btn btn-primary d-inline-flex"
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  // disabled={isSubmitting}
+                >
+                  {t("general.button.save")}
+                </Button>
+              </div>
+            </DialogActions>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
+}

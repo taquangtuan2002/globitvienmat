@@ -1,0 +1,192 @@
+import React, { useState, useEffect } from "react";
+import {
+  Grid,
+  Button,
+  IconButton,
+  Icon,
+  makeStyles,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@material-ui/core";
+import { useFormikContext, FieldArray } from "formik";
+import GlobitsDateTimePicker from "app/common/form/GlobitsDateTimePicker";
+import GlobitsTextField from "app/common/form/GlobitsTextField";
+import { useTranslation } from "react-i18next";
+import AddIcon from "@material-ui/icons/Add";
+import GlobitsAutocomplete from "app/common/form/GlobitsAutocomplete";
+import { pagingStaff } from "./../HumanResourcesInformation/StaffService";
+import { toast } from "react-toastify";
+import moment from "moment";
+import * as Yup from "yup";
+import { set } from "lodash";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    // marginTop: "10px",
+    // background: "#E4f5fc",
+    // padding: "10px 15px",
+    // borderRadius: "5px",
+  },
+  groupContainer: {
+    width: "100%",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "0!important",
+    },
+  },
+  tableContainer: {
+    marginTop: "16px",
+    "& .MuiTableCell-body": {
+      border: "1px solid #e9ecef",
+      padding: 0,
+    },
+    "& .MuiTableCell-head": {
+      padding: "10px",
+      border: "1px solid #e9ecef",
+    },
+  },
+  tableHeader: {
+    width: "100%",
+    borderBottom: "1px solid #E3F2FD",
+    marginBottom: "8px",
+    "& th": {
+      width: "calc(100vw / 4)",
+    },
+  },
+}));
+
+function Row(props) {
+  const { index, arrayHelpers, currentStaff } = props;
+  const { values, setFieldValue } = useFormikContext();
+  //const valid = false;
+
+  useEffect(() => {
+    // console.log(listEmployees);
+    if (values?.details[index].startTime && values?.details[index].endTime) {
+      let result = diffHours(
+        values?.details[index].endTime,
+        values?.details[index].startTime
+      );
+      console.log(result);
+      setFieldValue("totalHoursViewDetail", result);
+    }
+  }, [values?.details[index].startTime, values?.details[index].endTime]);
+
+  const diffHours = (dt2, dt1) => {
+    var diff = (dt2 - dt1) / (1000 * 60 * 60);
+    return diff.toFixed(1);
+  };
+
+  return (
+    <TableRow key={index}>
+      <TableCell colSpan={2}>
+        <GlobitsTextField name={`details[${index}].workingItemTitle`} />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsDateTimePicker
+          name={`details[${index}].startTime`}
+          format="HH:mm dd/MM/yyyy"
+          isDateTimePicker
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsDateTimePicker
+          name={`details[${index}].endTime`}
+          format="HH:mm dd/MM/yyyy"
+          isDateTimePicker
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField
+          type="number"
+          name={`details[${index}].duration`}
+          //disabled
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsAutocomplete
+          name={`details[${index}].employee`}
+          options={values?.timeSheetStaff }
+          displayData="displayName"
+          // api={pagingStaff}
+        />
+      </TableCell>
+
+      <TableCell style={{ textAlign: "center" }}>
+        <IconButton size="small" onClick={() => arrayHelpers.remove(index)}>
+          <Icon fontSize="small" color="secondary">
+            delete
+          </Icon>
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export default function Medications(props) {
+  const { currentStaff } = props;
+  const { t } = useTranslation();
+  const classes = useStyles();
+  const { values } = useFormikContext();
+
+  return (
+    <FieldArray
+      name="details"
+      render={(arrayHelpers) => (
+        <div className={classes.groupContainer}>
+          <h5 className="mb-10">Danh sách đầu việc</h5>
+
+          <Button
+            className="btn btn-primary d-inline-flex"
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() =>
+              arrayHelpers.push({
+                date: null,
+                practioner: "",
+                unit: "",
+              })
+            }
+          >
+            {t("timeSheet.addDetail")}
+          </Button>
+          <div className={classes.tableContainer}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell colSpan={2}>
+                    {t("timeSheet.workingItemTitle")}
+                  </TableCell>
+                  <TableCell colSpan={1} style={{ width: "190px" }}>{t("timeSheet.startTime")} </TableCell>
+                  <TableCell colSpan={1} style={{ width: "190px" }}>{t("timeSheet.endTime")}</TableCell>
+                  <TableCell colSpan={1}>{`${t(
+                    "timeSheet.duration"
+                  )} (ước tính: ${
+                    values.totalHoursViewDetail
+                      ? values.totalHoursViewDetail
+                      : 0
+                  } giờ)`}</TableCell>
+                  <TableCell colSpan={1}>{t("timeSheet.employee")}</TableCell>
+                  <TableCell
+                    style={{ width: "30px", textAlign: "center" }}
+                  ></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {values?.details?.map((detail, index) => (
+                  <Row
+                    index={index}
+                    arrayHelpers={arrayHelpers}
+                    currentStaff={currentStaff}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+    />
+  );
+}

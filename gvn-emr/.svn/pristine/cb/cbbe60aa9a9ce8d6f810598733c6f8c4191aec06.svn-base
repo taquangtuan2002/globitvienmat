@@ -1,0 +1,271 @@
+package com.globits.emr.dto;
+
+import java.util.Date;
+import java.util.UUID;
+
+import com.globits.core.dto.BaseObjectDto;
+import com.globits.core.dto.PersonDto;
+import com.globits.emr.domain.Patient;
+
+public class PatientDto extends BaseObjectDto{
+	
+	private UUID id;
+	
+	private String code;//Patient Code
+	
+	private String firstName;
+	
+	private String lastName;
+	
+	private String displayName;
+		  
+	private String shortName;
+	  
+	private Date birthDate;
+	  
+	private String birthPlace;
+	  
+	private String gender;
+	  
+	private Date startDate;
+	  
+	private Date endDate;
+	  
+	private String phoneNumber;
+	  
+	private String idNumber;
+	  
+	private String idNumberIssueBy;
+	  
+	private Date idNumberIssueDate;
+	  
+	private String email;
+	
+//	private com.globits.core.dto.CountryDto nationality;
+//		  
+//	private com.globits.core.dto.AdministrativeUnitDto nativeVillage;
+//		  
+//	private com.globits.core.dto.EthnicsDto ethnics;
+//		  
+//	private com.globits.core.dto.ReligionDto religion;
+	  
+    private byte[] photo;
+	  
+	private Boolean photoCropped;
+	  
+	private String imagePath;
+	  
+//	private Set addresses;
+		  
+	private Long userId;
+		  
+	private Date communistYouthUnionJoinDate;
+		  
+	private Date communistPartyJoinDate;
+	  
+    private String carrer;
+	  
+	private Integer maritalStatus;
+	
+	public PatientDto() {
+	}
+
+	public PatientDto(Patient entity) {
+		if(entity!=null) {
+			if(entity.getId()!=null) {
+				this.id=entity.getId();
+			}
+			if(entity.getCode()!=null) {
+				this.code = entity.getCode();
+			}
+			if(entity.getVoided()!=null) {
+				this.voided=entity.getVoided();
+			}
+			if(entity.getFirstName()!=null) {
+				this.firstName = entity.getFirstName();
+			}
+			if(entity.getLastName()!=null) {
+				this.lastName = entity.getLastName();
+			}
+			if(entity.getDisplayName()!=null) {
+				this.displayName=entity.getDisplayName();
+			}
+			if(entity.getBirthDate()!=null) {
+				this.birthDate=entity.getBirthDate();
+			}
+			if(entity.getCarrer()!=null) {
+				this.carrer=entity.getCarrer();
+			}
+			if(entity.getCommunistPartyJoinDate()!=null) {
+				this.communistPartyJoinDate=entity.getCommunistPartyJoinDate();
+			}
+			if(entity.getCommunistYouthUnionJoinDate()!=null) {
+				this.communistYouthUnionJoinDate=entity.getCommunistYouthUnionJoinDate();
+			}
+			if(entity.getEmail()!=null) {
+				this.email=entity.getEmail();
+			}
+			if(entity.getEndDate()!=null) {
+				this.endDate=entity.getEndDate();
+			}
+			if(entity.getGender()!=null) {
+				this.gender=entity.getGender();
+			}
+			if(entity.getIdNumber()!=null) {
+				this.idNumber=entity.getIdNumber();
+			}
+			if(entity.getIdNumberIssueBy()!=null) {
+				this.idNumberIssueBy=entity.getIdNumberIssueBy();
+			}
+			if(entity.getIdNumberIssueDate()!=null) {
+				this.idNumberIssueDate=entity.getIdNumberIssueDate();
+			}
+			if(entity.getImagePath()!=null) {
+				this.imagePath=entity.getImagePath();
+			}
+			
+		}
+	
+	}
+	
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	
+	
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public String getShortName() {
+		return shortName;
+	}
+
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
+	}
+
+	public Date getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(Date birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public String getBirthPlace() {
+		return birthPlace;
+	}
+
+	public void setBirthPlace(String birthPlace) {
+		this.birthPlace = birthPlace;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public String getIdNumber() {
+		return idNumber;
+	}
+
+	public void setIdNumber(String idNumber) {
+		this.idNumber = idNumber;
+	}
+
+	public String getIdNumberIssueBy() {
+		return idNumberIssueBy;
+	}
+
+	public void setIdNumberIssueBy(String idNumberIssueBy) {
+		this.idNumberIssueBy = idNumberIssueBy;
+	}
+
+	public Date getIdNumberIssueDate() {
+		return idNumberIssueDate;
+	}
+
+	public void setIdNumberIssueDate(Date idNumberIssueDate) {
+		this.idNumberIssueDate = idNumberIssueDate;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public UUID getId() {
+		return id;
+	}
+
+	public void setId(UUID id) {
+		this.id = id;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+
+	public boolean isVoided() {
+		return voided;
+	}
+
+
+	public void setVoided(boolean voided) {
+		this.voided = voided;
+	}
+	
+}

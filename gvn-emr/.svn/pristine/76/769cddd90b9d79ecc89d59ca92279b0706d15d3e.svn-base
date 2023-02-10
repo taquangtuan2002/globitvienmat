@@ -1,0 +1,182 @@
+import React from "react";
+import {
+  Button,
+  IconButton,
+  Icon,
+  makeStyles,
+  TableCell,
+  Table,
+  TableRow,
+  TableBody,
+  TableHead,
+} from "@material-ui/core";
+import { useFormikContext, FieldArray } from "formik";
+import GlobitsTextField from "app/common/form/GlobitsTextField";
+import GlobitsDateTimePicker from "app/common/form/GlobitsDateTimePicker";
+import GlobitsPagingAutocomplete from "app/common/form/GlobitsPagingAutocomplete";
+import { useTranslation } from "react-i18next";
+import AddIcon from "@material-ui/icons/Add";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    background: "#E4f5fc",
+    padding: "10px 15px",
+    borderRadius: "5px",
+  },
+  groupContainer: {
+    width: "100%",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "0!important",
+    },
+  },
+  tableContainer: {
+    marginTop: "16px",
+    overflowX: "auto",
+    overflowY: "auto",
+    "& .MuiTableCell-body": {
+      border: "1px solid #e9ecef",
+      padding: 0,
+      textAlign: "center",
+    },
+    "& .MuiTableCell-head": {
+      padding: "10px",
+      minWidth: "150px",
+      border: "1px solid #e9ecef",
+      textAlign: "center",
+    },
+  },
+  tableHeader: {
+    width: "100%",
+    borderBottom: "1px solid #E3F2FD",
+    marginBottom: "8px",
+    "& th": {
+      width: "calc(100vw / 4)",
+    },
+  },
+}));
+
+function Row(props) {
+  const { index, arrayHelpers } = props;
+  const { values, setFieldValue } = useFormikContext();
+
+  return (
+    <TableRow key={index}>
+      <TableCell colSpan={1}>
+        <GlobitsTextField
+          name={`salaryHistory[${index}].coefficient`}
+          type="number"
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField name={`salaryHistory[${index}].staffTypeCode`} />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField
+          name={`salaryHistory[${index}].coefficientOverLevel`}
+          type="number"
+        />
+      </TableCell>
+      <TableCell colSpan={1}>
+        <GlobitsTextField
+          name={`salaryHistory[${index}].percentage`}
+          type="number"
+        />
+      </TableCell>
+      <TableCell>
+        <GlobitsTextField name={`salaryHistory[${index}].decisionCode`} />
+      </TableCell>
+      <TableCell style={{ minWidth: "220px" }}>
+        <GlobitsDateTimePicker
+          name={`salaryHistory[${index}].decisionDate`}
+          disableFuture={true}
+        />
+      </TableCell>
+      <TableCell>
+        <GlobitsPagingAutocomplete
+          name={`salaryHistory[${index}].salaryIncrementType`}
+        />
+      </TableCell>
+      <TableCell style={{ textAlign: "center" }}>
+        <IconButton size="small" onClick={() => arrayHelpers.remove(index)}>
+          <Icon fontSize="small" color="secondary">
+            delete
+          </Icon>
+        </IconButton>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export default function StaffSalaryHistoryImpl() {
+  const { t } = useTranslation();
+  const classes = useStyles();
+  const { values } = useFormikContext();
+  return (
+    <FieldArray
+      name="salaryHistory"
+      render={(arrayHelpers) => (
+        <div className={classes.groupContainer}>
+          <Button
+            className="btn btn-primary d-inline-flex"
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() =>
+              arrayHelpers.push({
+                coefficient: null,
+                staffTypeCode: "",
+                coefficientOverLevel: null,
+                percentage: null,
+                decisionDate: null,
+                decisionCode: "",
+                salaryIncrementType: null,
+              })
+            }
+          >
+            {t("general.button.add")}
+          </Button>
+          <div className={classes.tableContainer}>
+            {values?.salaryHistory?.length > 0 ? (
+              <Table style={{ tableLayout: "auto" }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.positionName")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.staffTypeCode")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.coefficientOverLevel")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.percentage")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.decisionCode")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.decisionDate")}
+                    </TableCell>
+                    <TableCell colSpan={1}>
+                      {t("humanResourcesInformation.salaryIncrementType")}
+                    </TableCell>
+                    <TableCell style={{ minWidth: "70px" }}>
+                      {t("general.action")}
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {values?.salaryHistory?.map((detail, index) => (
+                    <Row index={index} arrayHelpers={arrayHelpers} />
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <h5 className="text-primary n-w">Không có quá trình lương nào</h5>
+            )}
+          </div>
+        </div>
+      )}
+    />
+  );
+}

@@ -1,0 +1,137 @@
+package com.globits.emr.dto.concept;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import com.globits.core.dto.BaseObjectDto;
+import com.globits.emr.domain.concept.Concept;
+import com.globits.emr.domain.concept.ConceptAnswer;
+import com.globits.emr.domain.concept.ConceptAttribute;
+import com.globits.emr.domain.concept.ConceptDatatype;
+import com.globits.emr.domain.concept.ConceptNumeric;
+import com.globits.emr.domain.concept.ConceptType;
+
+public class ConceptDto extends BaseObjectDto {
+	private ConceptTypeDto conceptType;
+    private ConceptDatatypeDto conceptDataType;
+    private ConceptDto parent;
+    private Set<ConceptAnswerDto> conceptAnswers;
+    private Set<ConceptNumericsDto> conceptNumerics;
+    private Set<ConceptAttributeDto> conceptAttributes;
+    private String name;
+	private String code;
+	private String description;
+
+	public ConceptDto() {
+
+	}
+
+	public ConceptDto(Concept entity) {
+		if(entity != null) {
+			this.id = entity.getId();
+			if(entity.getConceptType() != null) {
+				this.conceptType = new ConceptTypeDto(entity.getConceptType());
+			}
+			if(conceptDataType != null) {
+				this.conceptDataType = new ConceptDatatypeDto(entity.getConceptDataType());
+			}
+			if(entity.getParent() != null) {
+				this.parent = new ConceptDto(entity.getParent(), true);
+			}
+			if(entity.getConceptAnswers()!=null && entity.getConceptAnswers().size()>0) {
+				this.conceptAnswers = new HashSet<ConceptAnswerDto>();
+				for (ConceptAnswer ans : entity.getConceptAnswers()) {
+					ConceptAnswerDto dto = new ConceptAnswerDto();
+					dto.setId(ans.getId());
+					this.conceptAnswers.add(dto);
+				}
+			}
+			if(entity.getConceptNumerics()!=null && entity.getConceptNumerics().size()>0) {
+				this.conceptNumerics = new HashSet<ConceptNumericsDto>();
+				for (ConceptNumeric numeric : entity.getConceptNumerics()) {
+					ConceptNumericsDto dto = new ConceptNumericsDto();
+					dto.setId(numeric.getId());
+					this.conceptNumerics.add(dto);
+				}
+			}
+			if(entity.getAttributes()!=null && entity.getAttributes().size()>0) {
+				this.conceptAttributes = new HashSet<ConceptAttributeDto>();
+				for (ConceptAttribute att : entity.getAttributes()) {
+					ConceptAttributeDto dto = new ConceptAttributeDto();
+					dto.setId(att.getId());
+					this.conceptAttributes.add(dto);
+				}
+			}
+		}
+	}
+	public ConceptDto(Concept entity, boolean arc) {
+		if(entity != null) {
+			this.id = entity.getId();
+			this.code = entity.getCode();
+			this.name = entity.getName();
+			this.description = entity.getDescription();
+		}
+	}
+
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getCode() {
+		return code;
+	}
+	public void setCode(String code) {
+		this.code = code;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+    public ConceptTypeDto getConceptType() {
+		return conceptType;
+	}
+	public void setConceptType(ConceptTypeDto conceptType) {
+		this.conceptType = conceptType;
+	}
+	public ConceptDatatypeDto getConceptDataType() {
+		return conceptDataType;
+	}
+	public void setConceptDataType(ConceptDatatypeDto conceptDataType) {
+		this.conceptDataType = conceptDataType;
+	}
+	public ConceptDto getParent() {
+		return parent;
+	}
+	public void setParent(ConceptDto parent) {
+		this.parent = parent;
+	}
+
+	public Set<ConceptAnswerDto> getConceptAnswers() {
+		return conceptAnswers;
+	}
+
+	public void setConceptAnswers(Set<ConceptAnswerDto> conceptAnswers) {
+		this.conceptAnswers = conceptAnswers;
+	}
+
+	public Set<ConceptNumericsDto> getConceptNumerics() {
+		return conceptNumerics;
+	}
+
+	public void setConceptNumerics(Set<ConceptNumericsDto> conceptNumerics) {
+		this.conceptNumerics = conceptNumerics;
+	}
+
+	public Set<ConceptAttributeDto> getConceptAttributes() {
+		return conceptAttributes;
+	}
+
+	public void setConceptAttributes(Set<ConceptAttributeDto> conceptAttributes) {
+		this.conceptAttributes = conceptAttributes;
+	}
+}

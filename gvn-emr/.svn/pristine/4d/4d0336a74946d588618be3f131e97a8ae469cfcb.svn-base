@@ -1,0 +1,181 @@
+package com.globits.emr.service.impl;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.joda.time.LocalDateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import com.globits.core.service.impl.GenericServiceImpl;
+import com.globits.emr.domain.concept.ConceptDatatype;
+import com.globits.emr.dto.concept.ConceptDatatypeDto;
+import com.globits.emr.dto.search.SearchDto;
+import com.globits.emr.repository.ConceptDatatypeRepository;
+import com.globits.emr.service.ConceptDatatypeService;
+
+@Service
+@Transactional
+public class ConceptDatatypeServiceImpl extends GenericServiceImpl<ConceptDatatype, UUID> implements ConceptDatatypeService{
+	@PersistenceContext
+    EntityManager manager;
+	@Autowired 
+	ConceptDatatypeRepository repos;
+
+	@Override
+	public ConceptDatatypeDto saveOrUpdate(UUID id, ConceptDatatypeDto dto) {
+		if (dto != null && dto.getCode() != null && StringUtils.hasText(dto.getCode())) {
+			ConceptDatatype entity = null;
+            if (dto.getId() != null) {
+                if (dto.getId() != null && !dto.getId().equals(id)) {
+                    return null;
+                }
+                Optional<ConceptDatatype> ConceptDatatypeOptional = repos.findById(id);
+                if (ConceptDatatypeOptional.isPresent()) {
+                    entity = ConceptDatatypeOptional.get();
+                }
+                if (entity != null)
+                    entity.setModifyDate(LocalDateTime.now());
+            }
+            if (entity == null) {
+                entity = new ConceptDatatype();
+                entity.setCreateDate(LocalDateTime.now());
+                entity.setModifyDate(LocalDateTime.now());
+            }
+            entity.setCode(dto.getCode());
+            entity.setName(dto.getName());
+            entity.setDescription(dto.getDescription());
+            entity = repos.save(entity);
+            return new ConceptDatatypeDto(entity);
+        }
+        return null;
+	}
+
+	@Override
+	public Boolean deleteById(UUID id) {
+		if (id != null) {
+            repos.deleteById(id);
+            return true;
+        }
+        return false;
+	}
+	
+	@Override
+	public void updateVoided(UUID id) {
+		if(id != null) {
+			Authentication authencation = SecurityContextHolder.getContext().getAuthentication();
+			String currentUsername = "Unknown User";
+			if(authencation != null) {
+				currentUsername = authencation.getName();
+			}
+			ConceptDatatype entity = null;
+			Optional<ConceptDatatype> conceptDatatypeOptional = repos.findById(id);
+			if(conceptDatatypeOptional.isPresent()) {
+				entity = conceptDatatypeOptional.get();
+			}
+			if(entity != null) {
+				entity.setModifyDate(LocalDateTime.now());
+				entity.setModifiedBy(currentUsername);
+			}
+			entity.setVoided(true);
+		}
+	}
+	
+	@Override
+	public Boolean deleteFakeVoided(UUID id) {
+		if(id != null) {
+			ConceptDatatype entity = null;
+			Optional<ConceptDatatype> conceptDatatypeOptional = repos.findById(id);
+			if(conceptDatatypeOptional.isPresent()) {
+				entity = conceptDatatypeOptional.get();
+			}
+			if(entity != null) {
+				this.updateVoided(id);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public ConceptDatatypeDto getConceptDatatype(UUID id) {
+		ConceptDatatype entity = null;
+        Optional<ConceptDatatype> ConceptDatatypeOptional = repos.findById(id);
+        if (ConceptDatatypeOptional.isPresent()) {
+            entity = ConceptDatatypeOptional.get();
+        }
+        if (entity != null) {
+            return new ConceptDatatypeDto(entity);
+        }
+        return null;
+	}
+
+	@Override
+	public Page<ConceptDatatypeDto> searchByPage(SearchDto dto) {
+		if (dto == null) {
+            return null;
+        }
+
+        int pageIndex = dto.getPageIndex();
+        int pageSize = dto.getPageSize();
+
+        if (pageIndex > 0) {
+            pageIndex--;
+        } else {
+            pageIndex = 0;
+        }
+
+        String whereClause = "";
+
+        String orderBy = " ORDER BY entity.createDate DESC";
+
+        String sqlCount = "select count(entity.id) from ConceptDatatype as entity where (1=1)   ";
+        String sql = "select new com.globits.emr.dto.concept.ConceptDatatypeDto(entity) from ConceptDatatype as entity where (1=1)  ";
+
+        if (dto.getKeyword() != null && StringUtils.hasText(dto.getKeyword())) {
+            whereClause += " AND ( entity.name LIKE :text OR entity.code LIKE :text )";
+        }
+
+        sql += whereClause + orderBy;
+        sqlCount += whereClause;
+
+        Query q = manager.createQuery(sql, ConceptDatatypeDto.class);
+        Query qCount = manager.createQuery(sqlCount);
+
+        if (dto.getKeyword() != null && StringUtils.hasText(dto.getKeyword())) {
+            q.setParameter("text", '%' + dto.getKeyword() + '%');
+            qCount.setParameter("text", '%' + dto.getKeyword() + '%');
+        }
+        int startPosition = pageIndex * pageSize;
+        q.setFirstResult(startPosition);
+        q.setMaxResults(pageSize);
+        List<ConceptDatatypeDto> entities = q.getResultList();
+        long count = (long) qCount.getSingleResult();
+
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        return new PageImpl<>(entities, pageable, count);
+	}
+
+	@Override
+	public Boolean checkCode(UUID id, String code) {
+		if (StringUtils.hasText(code)) {
+            Long count = repos.checkCode(code, id);
+            return count != 0L;
+        }
+        return null;
+	}
+
+}

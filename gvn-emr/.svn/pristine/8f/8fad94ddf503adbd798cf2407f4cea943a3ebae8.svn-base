@@ -1,0 +1,23 @@
+package com.globits.emr.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.globits.emr.domain.PersonAttribute;
+import com.globits.emr.domain.PersonAttributeType;
+import com.globits.emr.dto.PersonAttributeTypeDto;
+
+@Repository
+public interface PersonAttributeTypeRepository extends JpaRepository<PersonAttributeType, UUID> {
+	@Query(value = "SELECT * FROM tbl_person_attribute_type WHERE id =:id", nativeQuery = true)
+	PersonAttributeType getById(UUID id);
+
+	@Query("select new com.globits.emr.dto.PersonAttributeTypeDto(p) from PersonAttributeType p ")
+	List<PersonAttributeTypeDto> getAll();
+
+
+}

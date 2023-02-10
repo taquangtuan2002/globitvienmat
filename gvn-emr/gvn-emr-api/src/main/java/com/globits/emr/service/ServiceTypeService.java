@@ -1,0 +1,29 @@
+package com.globits.emr.service;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+
+import com.globits.core.service.GenericService;
+import com.globits.emr.domain.ServiceType;
+import com.globits.emr.dto.ServiceTypeDto;
+import com.globits.emr.dto.search.SearchDto;
+
+public interface ServiceTypeService extends GenericService<ServiceType, UUID>{
+	List<ServiceType> getAllDto();
+	
+	ServiceType getDtoById(UUID id);
+	
+	ServiceType saveOrUpdate(UUID id, ServiceType dto);
+	
+	Boolean deleteById(UUID id);
+	
+	void updateVoided(UUID id);
+	
+	Boolean deleteFakeVoided(UUID id);
+	
+	Boolean checkCode(UUID id, String code);
+	
+	Page<ServiceTypeDto> searchByPage(SearchDto searchDto);
+}

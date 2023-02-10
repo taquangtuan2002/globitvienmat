@@ -1,0 +1,95 @@
+package com.globits.emr.service.impl;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.transaction.Transactional;
+
+import org.joda.time.LocalDateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.stereotype.Service;
+
+import com.globits.core.service.impl.GenericServiceImpl;
+import com.globits.emr.domain.HealthCareService;
+import com.globits.emr.domain.ServiceType;
+import com.globits.emr.dto.HealthCareServiceDto;
+import com.globits.emr.repository.HealthCareServiceRepository;
+import com.globits.emr.repository.ServiceTypeRepository;
+import com.globits.emr.service.HealthCareServiceService;
+
+@Service
+@Transactional
+public class HealthCareServiceServiceImpl extends GenericServiceImpl<HealthCareService, UUID> implements HealthCareServiceService{
+	
+	@Autowired
+	private HealthCareServiceRepository healthCareServiceRepos;
+	
+	@Autowired
+	private ServiceTypeRepository serviceTypeRepos;
+
+	@Override
+	public List<HealthCareServiceDto> getAllDto() {
+		return healthCareServiceRepos.getAllDto();
+	}
+
+	@Override
+	public HealthCareServiceDto getDtoById(UUID id) {
+		if(id != null) {
+			return healthCareServiceRepos.getDtoById(id);
+		}
+		return null;
+	}
+
+	@Override
+	public HealthCareServiceDto saveOrUpdate(UUID id, HealthCareServiceDto dto) {
+		if(dto == null) {
+			return null;
+		}
+		HealthCareService entity = null;
+		if(dto.getId() != null) {
+			Optional<HealthCareService> healthCareServiceOptional = healthCareServiceRepos.findById(dto.getId());
+			if(healthCareServiceOptional.isPresent()) {
+				entity = healthCareServiceOptional.get();
+			}
+			if(entity != null) {
+				entity.setModifyDate(LocalDateTime.now());
+			}
+		}
+		if(entity == null) {
+			entity = new HealthCareService();
+			entity.setCreateDate(LocalDateTime.now());
+			entity.setModifyDate(LocalDateTime.now());
+		}
+		// ServiceType
+		if(dto.getServiceType() != null) {
+			ServiceType seviceType = null;
+			if(dto.getServiceType().getId() != null) {
+				Optional<ServiceType> serviceTypeOptional = serviceTypeRepos.findById(dto.getServiceType().getId());
+				if(serviceTypeOptional.isPresent()) {
+					seviceType = serviceTypeOptional.get();
+				}
+			}
+			entity.setServiceType(seviceType);
+		}
+		entity = healthCareServiceRepos.save(entity);
+		return new HealthCareServiceDto(entity);
+	}
+
+	@Override
+	public Boolean deleteById(UUID id) {
+		if(id != null) {
+			healthCareServiceRepos.deleteById(id);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public Page<HealthCareServiceDto> getListPage() {
+		return new PageImpl<>(healthCareServiceRepos.getAllDto());
+	}
+
+}

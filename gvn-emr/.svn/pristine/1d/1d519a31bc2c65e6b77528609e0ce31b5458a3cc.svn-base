@@ -1,0 +1,15 @@
+import { Grid } from "@material-ui/core";
+import React from "react";
+import { observer } from "mobx-react";
+import "react-toastify/dist/ReactToastify.css";
+import StaffSalaryHistoryImpl from "../Component/StaffSalaryHistoryImpl";
+
+export default observer(function StaffSalaryHistory() {
+  return (
+    <React.Fragment>
+      <Grid container spacing={2}>
+        <StaffSalaryHistoryImpl />
+      </Grid>
+    </React.Fragment>
+  );
+});

@@ -1,0 +1,66 @@
+import {
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@material-ui/core";
+import CloseIcon from '@material-ui/icons/Close';
+import CheckIcon from '@material-ui/icons/Check';
+import moment from "moment";
+import React, { } from "react";
+import { observer } from "mobx-react";
+import "react-toastify/dist/ReactToastify.css";
+import { useTranslation } from "react-i18next";
+import { useFormikContext } from "formik";
+
+export default observer(function WorkingProcess() {
+  const { t } = useTranslation();
+  const { values } = useFormikContext();
+
+  return (
+    <Grid container spacing={3}>
+      <Grid item xs={12}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell colSpan={2}>{t("humanResourcesInformation.positionName")}</TableCell>
+              <TableCell colSpan={1}>{t("department.name")}</TableCell>
+              <TableCell colSpan={1}>{t("humanResourcesInformation.fromDate")}</TableCell>
+              <TableCell colSpan={1}>{t("humanResourcesInformation.toDate")}</TableCell>
+              <TableCell colSpan={1}>{t("humanResourcesInformation.currentPosition")}</TableCell>
+              <TableCell colSpan={1}>{t("humanResourcesInformation.mainPosition")}</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {values?.positions?.map((row, index) => (
+              <TableRow key={index}>
+
+                <TableCell colSpan={2}>
+                  {row.position?.name}
+                </TableCell>
+                <TableCell colSpan={1}>
+                  {row.department?.name}
+                </TableCell>
+                <TableCell colSpan={1}>
+                  {row.fromDate ? moment(row.fromDate).format('DD/MM/yyyy') : ""}
+                </TableCell>
+                <TableCell colSpan={1}>
+                  {row.toDate ? moment(row.toDate).format('DD/MM/yyyy') : ""}
+                </TableCell>
+                <TableCell colSpan={1}>
+                  {row.current ? <CheckIcon color="primary" /> : <CloseIcon color="secondary" />}
+                </TableCell>
+                <TableCell colSpan={1}>
+                {row.mainPosition ? <CheckIcon color="primary" /> : <CloseIcon color="secondary" />}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Grid>
+
+    </Grid>
+  );
+});

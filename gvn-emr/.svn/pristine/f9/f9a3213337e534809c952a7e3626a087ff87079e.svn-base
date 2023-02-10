@@ -1,0 +1,40 @@
+package com.globits.emr.dto;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import com.globits.core.dto.BaseObjectDto;
+import com.globits.emr.domain.EpisodeOfCare;
+
+
+public class EpisodeOfCareDto extends BaseObjectDto{
+private String startDatetime;
+private String stopDatetime;
+public EpisodeOfCareDto() {
+	
+}
+public EpisodeOfCareDto(EpisodeOfCare entity) {
+	DateFormat dateFormat = null;
+	dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+	this.startDatetime=dateFormat.format(entity.getStartDatetime());
+	this.stopDatetime=dateFormat.format(entity.getStopDatetime());
+}
+public String getStartDatetime() {
+	return startDatetime;
+}
+public void setStartDatetime(String startDatetime) {
+	this.startDatetime = startDatetime;
+}
+public String getStopDatetime() {
+	return stopDatetime;
+}
+public void setStopDatetime(String stopDatetime) {
+	this.stopDatetime = stopDatetime;
+}
+
+
+
+
+
+}

@@ -1,0 +1,103 @@
+package com.globits.emr.rest;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import com.globits.emr.visit.IehVisitDto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.globits.emr.EmrConstants;
+import com.globits.emr.domain.Visit;
+import com.globits.emr.dto.VisitDto;
+import com.globits.emr.dto.search.SearchDto;
+import com.globits.emr.service.VisitService;
+
+@RestController
+@RequestMapping("/api/visit")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+public class RestVisitController {
+	@Autowired
+	private VisitService visitService;
+	
+	@Secured({EmrConstants.ROLE_ADMIN})
+	@RequestMapping(value = "/start/{id-patient}", method = RequestMethod.GET)
+	public ResponseEntity<?> startVisit(@PathVariable("id-patient") UUID id) {
+		return visitService.startVisit(id);
+	}
+
+	@Secured({EmrConstants.ROLE_ADMIN})
+	@RequestMapping(value = "/start-ieh/{id-patient}", method = RequestMethod.GET)
+	public ResponseEntity<IehVisitDto> startIehVisit(@PathVariable("id-patient") UUID id) {
+		IehVisitDto result = visitService.startIehVisit(id);
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
+	@Secured({EmrConstants.ROLE_ADMIN})
+	@RequestMapping(value = "/get-all-dto", method = RequestMethod.GET)
+	public ResponseEntity<List<VisitDto>> getAllDto() {
+		List<Visit> lstVisits=visitService.getAll();
+		List<VisitDto>lstVisitDtos=new ArrayList<VisitDto>();
+		for (Visit visit : lstVisits) {
+         VisitDto dto=new VisitDto(visit);
+			lstVisitDtos.add(dto);
+		}
+		return new ResponseEntity<>(lstVisitDtos, HttpStatus.OK);
+	}
+	
+	@Secured({EmrConstants.ROLE_ADMIN})
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+	public ResponseEntity<VisitDto> getDtoById(@PathVariable("id") UUID id) {
+		Visit entity= visitService.getById(id);
+		VisitDto result=new VisitDto(entity);
+		if(result == null) {
+			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	@Secured({EmrConstants.ROLE_ADMIN})
+	@RequestMapping(value = "/save", method = RequestMethod.POST)
+	public ResponseEntity<?> saveVisit(@RequestBody VisitDto dto) {
+		Visit visit = visitService.saveOrUpdate(dto);
+		VisitDto result = new VisitDto(visit);
+		return new ResponseEntity<VisitDto>(result, HttpStatus.OK);
+	}
+	
+	@Secured({EmrConstants.ROLE_ADMIN})
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<Boolean> deleteDto(@PathVariable("id") UUID id) {
+		Boolean result = visitService.deleteById(id);
+		if(result == null) {
+			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	@Secured({EmrConstants.ROLE_ADMIN})
+	@RequestMapping(value = "/search-by-page", method = RequestMethod.POST)
+	public ResponseEntity<Page<VisitDto>> searchByPage(@RequestBody SearchDto dto) {
+		Page<VisitDto> result = visitService.searchByPage(dto);
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	@Secured({EmrConstants.ROLE_ADMIN})
+	@RequestMapping(value = "/delete-fake/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<Boolean> deleteFakeVoided(@PathVariable("id") UUID id) {
+		Boolean result = visitService.deleteFakeVoided(id);
+		if(result == null) {
+			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+}

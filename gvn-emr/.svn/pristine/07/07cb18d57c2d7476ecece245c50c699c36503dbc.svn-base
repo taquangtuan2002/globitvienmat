@@ -1,0 +1,111 @@
+package com.globits.emr.dto;
+
+import com.globits.core.dto.BaseObjectDto;
+import com.globits.emr.domain.Observation;
+import com.globits.emr.dto.concept.ConceptDto;
+
+import java.util.Date;
+
+public class ObservationDto extends BaseObjectDto {
+    private ConceptDto concept;
+
+    private EncounterDto encounter;
+
+    private PatientDto patient;
+
+    private Double valueNumeric;
+
+    private String valueText;
+
+    private Date valueDate;
+
+    private Boolean valueBoolean;
+    private ConceptDto valueCoded;// giá trị của obs thuộc 1 loại concept nào đó
+    private String comments;// có thể dùng cho trường hợp lưu giá trị chi tiết khác
+
+    public ObservationDto() {
+    }
+
+    public ObservationDto(Observation obs) {
+        if (obs != null) {
+            this.id = obs.getId();
+            this.comments = obs.getComments();
+            this.concept = new ConceptDto(obs.getConcept());
+            this.valueNumeric = obs.getValueNumeric();
+            this.valueText = obs.getValueText();
+            this.valueDate = obs.getValueDate();
+            this.valueCoded = new ConceptDto(obs.getValueCoded());
+        }
+    }
+    public ConceptDto getConcept() {
+        return concept;
+    }
+
+    public void setConcept(ConceptDto concept) {
+        this.concept = concept;
+    }
+
+    public EncounterDto getEncounter() {
+        return encounter;
+    }
+
+    public void setEncounter(EncounterDto encounter) {
+        this.encounter = encounter;
+    }
+
+    public PatientDto getPatient() {
+        return patient;
+    }
+
+    public void setPatient(PatientDto patient) {
+        this.patient = patient;
+    }
+
+    public Double getValueNumeric() {
+        return valueNumeric;
+    }
+
+    public void setValueNumeric(Double valueNumeric) {
+        this.valueNumeric = valueNumeric;
+    }
+
+    public String getValueText() {
+        return valueText;
+    }
+
+    public void setValueText(String valueText) {
+        this.valueText = valueText;
+    }
+
+    public Date getValueDate() {
+        return valueDate;
+    }
+
+    public void setValueDate(Date valueDate) {
+        this.valueDate = valueDate;
+    }
+
+    public Boolean getValueBoolean() {
+        return valueBoolean;
+    }
+
+    public void setValueBoolean(Boolean valueBoolean) {
+        this.valueBoolean = valueBoolean;
+    }
+
+    public ConceptDto getValueCoded() {
+        return valueCoded;
+    }
+
+    public void setValueCoded(ConceptDto valueCoded) {
+        this.valueCoded = valueCoded;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+}

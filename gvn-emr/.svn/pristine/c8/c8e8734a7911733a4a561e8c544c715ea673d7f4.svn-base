@@ -1,0 +1,26 @@
+package com.globits.emr.service;
+
+import com.globits.core.service.GenericService;
+import com.globits.emr.domain.Observation;
+import com.globits.emr.dto.ObservationDto;
+import com.globits.emr.dto.search.SearchDto;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface ObservationService extends GenericService<Observation, UUID> {
+    List<ObservationDto> getAllDto();
+
+    ObservationDto saveOrUpdate(ObservationDto dto);
+
+    Boolean deleteById(UUID id);
+
+    ObservationDto getDtoById(UUID id);
+
+    void updateVoided(UUID id);
+
+    Boolean deleteFakeVoided(UUID id);
+
+    Page<ObservationDto> searchByPage(SearchDto searchDto);
+}
